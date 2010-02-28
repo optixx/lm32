@@ -5,8 +5,8 @@ Asterisk (*) preceding a constraint indicates it was not met.
   Constraint                                |    Check    | Worst Case |  Best Case | Timing |   Timing   
                                             |             |    Slack   | Achievable | Errors |    Score   
 ----------------------------------------------------------------------------------------------------------
-  NET "clk_IBUF1" PERIOD = 20 ns HIGH 50%   | SETUP       |     1.384ns|    18.616ns|       0|           0
-                                            | HOLD        |     0.800ns|            |       0|           0
+  NET "clk_IBUF1" PERIOD = 20 ns HIGH 50%   | SETUP       |     1.166ns|    18.834ns|       0|           0
+                                            | HOLD        |     0.930ns|            |       0|           0
 ------------------------------------------------------------------------------------------------------
 
 

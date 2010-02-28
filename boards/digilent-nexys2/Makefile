@@ -37,9 +37,9 @@ SRC=                                      \
 	../../rtl/wb_gpio/wb_gpio.v           \
 	../../rtl/wb_conbus/wb_conbus_top.v   \
 	../../rtl/wb_conbus/wb_conbus_arb.v   \
-	../../rtl/wb_sram/wb_sram32.v
-#	../../rtl/wb_uart/uart.v              \
+	../../rtl/wb_sram/wb_sram16.v
 
+	#../../rtl/wb_uart/uart.v              \
 #############################################################################
 # Syntheis constants
 SYNCLEAN=system.bgn system.drc system.mrp system.ngd system.pcf 

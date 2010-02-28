@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-require "serialport.so"
+
+require "rubygems"
+require "serialport"
 require "optparse"
 
 port_baud     = 115200

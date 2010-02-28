@@ -40,6 +40,12 @@ int main()
     char test2[] = "Lokalerstr";
     char *str = test2;
     uint32_t i;
+
+    for (i = 0; i < 5; i++){
+    	uart_putstr( "." );
+	    msleep(1000);
+    }
+	uart_putstr( "\n" );
     
 //    for (i = 0; i < 4; i++)
  //       test2[i] = 'l';
@@ -78,13 +84,13 @@ int main()
 	}
 	uart_putchar('\n');    
 
-	uart_putstr( "Stack Pointer : " );
-	writeint(get_sp());
-	uart_putchar('\n');    
+	//uart_putstr( "Stack Pointer : " );
+	//writeint(get_sp());
+	//uart_putchar('\n');    
 
-	uart_putstr( "Global Pointer: " );
-	writeint(get_gp());
-	uart_putchar('\n');    
+	//uart_putstr( "Global Pointer: " );
+	//writeint(get_gp());
+	//uart_putchar('\n');    
 
 	uart_putstr( "Timer Test (1s): " );
 	for(i=0; i<4; i++) {

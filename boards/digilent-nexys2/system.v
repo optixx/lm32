@@ -20,11 +20,14 @@ module system
 	output                  uart_txd,
 	// SRAM
 	output           [17:0] sram_adr,
-	inout            [31:0] sram_dat,
+	inout            [15:0] sram_dat,
 	output            [3:0] sram_be_n,    // Byte   Enable
 	output            [1:0] sram_ce_n,    // Chip   Enable
 	output                  sram_oe_n,    // Output Enable
-	output                  sram_we_n     // Write  Enable
+	output                  sram_we_n,    // Write  Enable
+	output                  sram_ub,      // Upper byte Enable
+	output                  sram_lb       // Lower byte Enable
+
 );
 	
 wire         rst;
@@ -336,7 +339,7 @@ wb_bram #(
 //---------------------------------------------------------------------------
 // sram0
 //---------------------------------------------------------------------------
-wb_sram32 #(
+wb_sram16 #(
 	.adr_width(  18  ),
 	.latency(    0   )
 ) sram0 (
@@ -501,5 +504,8 @@ assign rst             = (sw[1]) ?      1'b0 : btn[0];
 assign gpio0_in[11: 8] = (sw[1]) ?       btn : 4'b0;
 assign gpio0_in[31:12] = 20'b0;
 assign gpio0_in[ 7: 0] =  8'b0;
+
+assign sram_ub = 0;
+assign sram_lb = 0;
 
 endmodule 
