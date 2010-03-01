@@ -33,6 +33,27 @@ NET "sw<1>" LOC = "H18" | IOSTANDARD = LVTTL;
 #NET "sw<7>" LOC = "R17" | IOSTANDARD = LVTTL | PULLUP ;
 
 # ==== SRAM ====
+
+NET "sram_oe_n"     LOC = "T2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_we_n"     LOC = "N7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_ce_n"     LOC = "R6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+
+NET "sram_lb"       LOC = "K5" | IOSTANDARD = LVCMOS33 | SLEW = FAST; 
+NET "sram_ub"       LOC = "K4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_clk"      LOC = "H5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_cre"      LOC = "P7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_adv"      LOC = "J4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_wait"     LOC = "F5";
+#Dummy
+NET "sram_be_n<0>"  LOC = "L15" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_be_n<1>"  LOC = "L17" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "flash_cs"      LOC = "R5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+
+NET "sram_adr<22>" LOC = "K6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_adr<21>" LOC = "D1" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_adr<20>" LOC = "K3" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_adr<19>" LOC = "D2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sram_adr<18>" LOC = "C1" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_adr<17>" LOC = "C2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_adr<16>" LOC = "E2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_adr<15>" LOC = "M5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
@@ -51,37 +72,6 @@ NET "sram_adr<3>"  LOC = "H1" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_adr<2>"  LOC = "H4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_adr<1>"  LOC = "J2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_adr<0>"  LOC = "J1" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-
-NET "sram_oe_n"     LOC = "T2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_we_n"     LOC = "N7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_ce_n<0>"  LOC = "R6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_lb"       LOC = "K5" | IOSTANDARD = LVCMOS33; 
-NET "sram_ub"       LOC = "K4" | IOSTANDARD = LVCMOS33;
-#NET "sram_clk"      LOC = "H5" | IOSTANDARD = LVCMOS33;
-#Dummy
-NET "sram_be_n<0>"  LOC = "L15" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_ce_n<1>"  LOC = "K12" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_be_n<1>"  LOC = "L17" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_be_n<2>"  LOC = "M15" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_be_n<3>"  LOC = "K13" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-
-#Dummy
-#NET "sram_dat<31>"  LOC = "B4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<30>"  LOC = "A4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<29>"  LOC = "C3" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<28>"  LOC = "C4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<27>"  LOC = "B6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<26>"  LOC = "D5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<25>"  LOC = "C5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<24>"  LOC = "F7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<23>"  LOC = "E7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<22>"  LOC = "A6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<21>"  LOC = "C7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<20>"  LOC = "F8" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<19>"  LOC = "D7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<18>"  LOC = "E8" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<17>"  LOC = "E9" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-#NET "sram_dat<16>"  LOC = "C9" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 
 NET "sram_dat<15>"  LOC = "T1" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_dat<14>"  LOC = "R3" | IOSTANDARD = LVCMOS33 | SLEW = FAST;

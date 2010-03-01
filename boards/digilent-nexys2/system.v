@@ -21,13 +21,17 @@ module system
 	// SRAM
 	output           [17:0] sram_adr,
 	inout            [15:0] sram_dat,
-	output            [3:0] sram_be_n,    // Byte   Enable
-	output            [1:0] sram_ce_n,    // Chip   Enable
+	output            [1:0] sram_be_n,    // Byte   Enable
+	output                  sram_ce_n,    // Chip   Enable
 	output                  sram_oe_n,    // Output Enable
 	output                  sram_we_n,    // Write  Enable
 	output                  sram_ub,      // Upper byte Enable
-	output                  sram_lb       // Lower byte Enable
-
+	output                  sram_lb,      // Lower byte Enable
+	output                  sram_clk,     // Clock
+	input                   sram_wait,  // Wait
+	output                  sram_cre,     // 
+	output                  sram_adv,      // 
+	output                  flash_cs      // Flash chip select 
 );
 	
 wire         rst;
@@ -358,12 +362,12 @@ wb_sram16 #(
 	.sram_adr(    sram_adr      ),
 	.sram_dat(    sram_dat      ),
 	.sram_be_n(   sram_be_n     ),
-	.sram_ce_n(   sram_ce_n[0]  ),
+	.sram_ce_n(   sram_ce_n     ),
 	.sram_oe_n(   sram_oe_n     ),
 	.sram_we_n(   sram_we_n     )
 );
 
-assign sram_ce_n[1] = sram_ce_n[0];
+//assign sram_ce_n[1] = sram_ce_n[0];
 
 //---------------------------------------------------------------------------
 // uart0
@@ -484,13 +488,24 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
                                       lm32d_adr[ 7: 0] ;
 */
 
+
+
+//----------------------------------------------------------------------------
+// Enable PSRAM
+//----------------------------------------------------------------------------
+assign sram_ub = 0;
+assign sram_lb = 0;
+assign sram_clk = 0;
+assign sram_cre = 0;
+assign sram_adv = 0;
+assign flash_cs = 1;
+
 //----------------------------------------------------------------------------
 // Mux UART wires according to sw[0]
 //----------------------------------------------------------------------------
 assign uart_txd  = (sw[0]) ? uart0_txd : lac_txd;
 assign lac_rxd   = (sw[0]) ?         1 : uart_rxd;
 assign uart0_rxd = (sw[0]) ? uart_rxd  : 1;
-
 
 //----------------------------------------------------------------------------
 // Mux LEDs and Push Buttons according to sw[1]
@@ -505,7 +520,5 @@ assign gpio0_in[11: 8] = (sw[1]) ?       btn : 4'b0;
 assign gpio0_in[31:12] = 20'b0;
 assign gpio0_in[ 7: 0] =  8'b0;
 
-assign sram_ub = 0;
-assign sram_lb = 0;
 
 endmodule 
