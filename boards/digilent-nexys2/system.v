@@ -19,7 +19,7 @@ module system
 	input                   uart_rxd, 
 	output                  uart_txd,
 	// SRAM
-	output           [17:0] sram_adr,
+	output           [22:0] sram_adr,
 	inout            [15:0] sram_dat,
 	output            [1:0] sram_be_n,    // Byte   Enable
 	output                  sram_ce_n,    // Chip   Enable

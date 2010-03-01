@@ -2,7 +2,7 @@
 // Wishbone SRAM controller
 //----------------------------------------------------------------------------
 module wb_sram16 #(
-	parameter                  adr_width = 18,    
+	parameter                  adr_width = 23,    
 	parameter                  latency   = 0    // 0 .. 7
 ) (
 	input                      clk,
