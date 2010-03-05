@@ -74,7 +74,7 @@ int main(int argc, char **argv)
             	mem_end   = (uint32_t *)0x40000080;
                 *mem_start = 'A' ;
             	for (p=(uint8_t*)mem_start;  p<(uint8_t*)mem_end; p++) {
-            		if (((uint32_t)p & 20) == 0) {
+            		if (((uint32_t)p & 15 ) == 0) {
             			uart_putstr("\r\n[");
             			uart_puthex32((uint32_t) p);
             			uart_putchar(']');    
@@ -107,6 +107,22 @@ int main(int argc, char **argv)
                     *mem_p = 0x00000000;
                 uart_putstr("\r\nCleared Test Mem\r\n");
             	break;   
+            case '5': 
+            	uart_putstr( "GPIO Test..." );
+            	gpio0->oe = 0x000000ff;
+            	for(;;) {
+            		for(i=0; i<8; i++) {
+            			uint32_t out1, out2;
+
+            			out1 = 0x01 << i;
+            			out2 = 0x80 >> i;
+            			gpio0->out = out1 | out2;
+
+            			sleep(100);
+            		}
+            	}
+                break;
+        
 			default:
 				uart_putstr("**soc-lm32/bootloader** > \r\n");
 				break;
