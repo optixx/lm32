@@ -49,6 +49,13 @@ int main(int argc, char **argv)
     			start = read_uint32();
     			jump(start);
     			break;   
+        	case 't': // test
+                p = (int8_t *) start;
+                *p = 'A';
+				uart_putstr("test mem: \r\n");
+                uart_putstr(*p);
+				uart_putstr("\r\ndone\r\n");
+        		break;   
 			default:
 				uart_putstr("**soc-lm32/bootloader** > \r\n");
 				break;

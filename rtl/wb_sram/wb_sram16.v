@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------------
 module wb_sram16 #(
 	parameter                  adr_width = 23,    
-	parameter                  latency   = 0    // 0 .. 7
+	parameter                  latency   = 0   // 0 .. 7
 ) (
 	input                      clk,
 	input                      reset,

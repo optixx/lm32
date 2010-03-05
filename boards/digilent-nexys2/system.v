@@ -7,6 +7,7 @@
 module system
 #(
 	parameter   bootram_file     = "../../firmware/boot0-serial/image.ram",
+	//parameter   bootram_file     = "../../firmware/memtest/image.ram",
 	parameter   clk_freq         = 50000000,
 	parameter   uart_baud_rate   = 115200
 ) (
@@ -28,10 +29,11 @@ module system
 	output                  sram_ub,      // Upper byte Enable
 	output                  sram_lb,      // Lower byte Enable
 	output                  sram_clk,     // Clock
-	input                   sram_wait,  // Wait
+	input                   sram_wait,    // Wait
 	output                  sram_cre,     // 
-	output                  sram_adv,      // 
-	output                  flash_cs      // Flash chip select 
+	output                  sram_adv,
+	output                  flash_cs,     // Flash chip select 
+	output                  flash_rp      // Flash chip select 
 );
 	
 wire         rst;
@@ -452,8 +454,7 @@ assign      lac_rts = 1;
 wire [7:0]  select;
 wire [7:0]  probe;
 
-/* Disabled LAC
-
+/*
 lac #(
 	.uart_freq_hz(     clk_freq ),
 	.uart_baud(  uart_baud_rate ),
@@ -486,19 +487,21 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
                (select[3:0] == 'ha) ? lm32d_adr[23:16] :
                (select[3:0] == 'hb) ? lm32d_adr[15: 8] :
                                       lm32d_adr[ 7: 0] ;
+
 */
-
-
 
 //----------------------------------------------------------------------------
 // Enable PSRAM
 //----------------------------------------------------------------------------
+
 assign sram_ub = 0;
 assign sram_lb = 0;
 assign sram_clk = 0;
 assign sram_cre = 0;
 assign sram_adv = 0;
+
 assign flash_cs = 1;
+assign flash_rp = 0;
 
 //----------------------------------------------------------------------------
 // Mux UART wires according to sw[0]

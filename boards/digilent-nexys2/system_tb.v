@@ -204,7 +204,7 @@ begin
 	end
 end
 
-/*
+
 always @(posedge clk)
 begin
 	if (dut.lm32i_ack) begin
@@ -213,6 +213,6 @@ begin
 		            (dut.lm32i_we) ? dut.lm32i_dat_w : dut.lm32i_dat_r );
 	end
 end
-*/
+
 
 endmodule
