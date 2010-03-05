@@ -67,3 +67,26 @@ void uart_putstr(char *str)
 	}
 }
 
+
+void uart_putint8(unsigned char c)
+{
+	uart_putchar(c + ((c < 10) ? '0' : 'A' - 10));
+}
+
+void uart_puthex8(char c)
+{
+    uart_putint8(c >> 4);
+    uart_putint8(c & 15);
+}
+
+void uart_puthex32(int i)
+{
+    uart_puthex8((i >> 24) & 0xff);
+    uart_puthex8((i >> 16) & 0xff);
+    uart_puthex8((i >>  8) & 0xff);
+    uart_puthex8((i >>  0) & 0xff);
+}
+
+
+
+

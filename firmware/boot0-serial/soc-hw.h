@@ -94,6 +94,10 @@ typedef struct {
 void uart_init();
 void uart_putchar(char c);
 void uart_putstr(char *str);
+void uart_putint8(unsigned char c);
+void uart_puthex8(char c);
+void uart_puthex32(int i);
+
 char uart_getchar();
 
 
