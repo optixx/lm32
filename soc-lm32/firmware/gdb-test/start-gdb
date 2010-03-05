@@ -1,6 +1,0 @@
-#!/bin/sh
-
-lm32-elf-gdb image << ENDL
-target remote /dev/ttyUSB0
-ENDL
-
