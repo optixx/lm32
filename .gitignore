@@ -26,6 +26,9 @@
 *.dep
 *.unroutes
 *.log
-
 *.ram
 *.srec
+*.svf
+log
+image
+
