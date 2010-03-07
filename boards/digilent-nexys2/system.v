@@ -15,6 +15,8 @@ module system
 	output            [7:0] led,
 	input             [3:0] btn,
 	input             [7:0] sw,
+	output            [6:0] seg,
+	output            [3:0] an,
 	// UART
 	input                   uart_rxd, 
 	output                  uart_txd
@@ -546,5 +548,30 @@ assign gpio0_in[11: 8] = (sw[1]) ?       btn : 4'b0;
 assign gpio0_in[31:12] = 20'b0;
 assign gpio0_in[ 7: 0] =  8'b0;
 
+assign an[3:0] = 4'b1110;
+/*
+"1000000" when x"0" , 
+"1111001" when x"1" , 
+"0100100" when x"2" , 
+"0110000" when x"3" , 
+"0011001" when x"4" , 
+"0010010" when x"5" , 
+"0000010" when x"6" , 
+"1111000" when x"7" , 
+"0000000" when x"8" , 
+"0010000" when x"9" , 
+"0001000" when x"A" , 
+"0000011" when x"B" , 
+"1000110" when x"C" , 
+"0100001" when x"D" , 
+"0000110" when x"E" , 
+"0001110" when others;
+*/
 
+always @ (posedge clk or posedge rst)
+case (gpio0_out[3:0]) begin
+    4'h1: seg = 7'b1000000;
+    default: seg = 7'0001110;
+endcase     
+    
 endmodule 

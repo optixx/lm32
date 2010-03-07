@@ -110,17 +110,15 @@ int main(int argc, char **argv)
             case '5': 
             	uart_putstr( "GPIO Test..." );
             	gpio0->oe = 0x000000ff;
-            	for(;;) {
-            		for(i=0; i<8; i++) {
-            			uint32_t out1, out2;
+        		for(i=0; i<8; i++) {
+        			uint32_t out1, out2;
 
-            			out1 = 0x01 << i;
-            			out2 = 0x80 >> i;
-            			gpio0->out = out1 | out2;
+        			out1 = 0x01 << i;
+        			out2 = 0x80 >> i;
+        			gpio0->out = out1 | out2;
 
-            			sleep(100);
-            		}
-            	}
+        			sleep(100);
+        		}
                 break;
         
 			default:
