@@ -4,6 +4,40 @@
 // Top Level Design for the Xilinx Spartan 3-200 Starter Kit
 //---------------------------------------------------------------------------
 
+module gpio_sevenseg 
+(
+	input           clk_i, 
+	output reg      [7:0] seg,
+	output          [3:0] an,
+    input           [3:0] gpio
+);
+
+
+always @(posedge clk_i)
+case (gpio[3:0])
+    4'h0: seg = 7'b1000000;
+    4'h1: seg = 7'b1111001;
+    4'h2: seg = 7'b0100100; 
+    4'h3: seg = 7'b0110000; 
+    4'h4: seg = 7'b0011001; 
+    4'h5: seg = 7'b0010010; 
+    4'h6: seg = 7'b0000010; 
+    4'h7: seg = 7'b1111000; 
+    4'h8: seg = 7'b0000000; 
+    4'h9: seg = 7'b0010000; 
+    4'ha: seg = 7'b0001000; 
+    4'hb: seg = 7'b0000011; 
+    4'hc: seg = 7'b1000110;
+    4'hd: seg = 7'b0100001; 
+    4'he: seg = 7'b0000110; 
+    default: seg = 7'b0001110;
+endcase     
+
+assign an[3:0] = 4'b1110;
+
+endmodule 
+
+
 module system
 #(
 	parameter   bootram_file     = "../../firmware/boot0-serial/image.ram",
@@ -127,9 +161,7 @@ wire [2:0]   lm32i_cti,
 wire [1:0]   lm32i_bte,
              lm32d_bte;
 
-//---------------------------------------------------------------------------
-// Interrupts
-//---------------------------------------------------------------------------
+
 wire [31:0]  intr_n;
 wire         uart0_intr = 0;
 wire   [1:0] timer0_intr;
@@ -528,6 +560,17 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
 
 */
 
+//---------------------------------------------------------------------------
+// Sevensegment
+//---------------------------------------------------------------------------
+gpio_sevenseg gpio_sevenseg0 (
+	.clk_i( clk ),
+	.seg( seg ),
+	.an( an ),
+	.gpio( gpio0_out )
+);
+
+
 //----------------------------------------------------------------------------
 // Mux UART wires according to sw[0]
 //----------------------------------------------------------------------------
@@ -547,31 +590,6 @@ assign rst             = (sw[1]) ?      1'b0 : btn[0];
 assign gpio0_in[11: 8] = (sw[1]) ?       btn : 4'b0;
 assign gpio0_in[31:12] = 20'b0;
 assign gpio0_in[ 7: 0] =  8'b0;
-
-assign an[3:0] = 4'b1110;
-/*
-"1000000" when x"0" , 
-"1111001" when x"1" , 
-"0100100" when x"2" , 
-"0110000" when x"3" , 
-"0011001" when x"4" , 
-"0010010" when x"5" , 
-"0000010" when x"6" , 
-"1111000" when x"7" , 
-"0000000" when x"8" , 
-"0010000" when x"9" , 
-"0001000" when x"A" , 
-"0000011" when x"B" , 
-"1000110" when x"C" , 
-"0100001" when x"D" , 
-"0000110" when x"E" , 
-"0001110" when others;
-*/
-
-always @ (posedge clk or posedge rst)
-case (gpio0_out[3:0]) begin
-    4'h1: seg = 7'b1000000;
-    default: seg = 7'0001110;
-endcase     
+endmodule    
     
-endmodule 
+

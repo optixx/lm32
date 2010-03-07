@@ -108,7 +108,7 @@ int main(int argc, char **argv)
                 uart_putstr("\r\nCleared Test Mem\r\n");
             	break;   
             case '5': 
-            	uart_putstr( "GPIO Test..." );
+            	uart_putstr( "GPIO Test 1...\r\n" );
             	gpio0->oe = 0x000000ff;
         		for(i=0; i<8; i++) {
         			uint32_t out1, out2;
@@ -116,8 +116,20 @@ int main(int argc, char **argv)
         			out1 = 0x01 << i;
         			out2 = 0x80 >> i;
         			gpio0->out = out1 | out2;
+                    uart_puthex32(gpio0->out);
+                	uart_putstr( "\r\n" );
 
         			sleep(100);
+        		}
+                break;
+            case '6': 
+            	uart_putstr( "GPIO Test 2...\r\n" );
+            	gpio0->oe = 0x000000ff;
+        		for(i=0; i<255; i++) {
+                	gpio0->out = i;
+                    uart_puthex32(gpio0->out);
+                	uart_putstr( "\r\n" );
+        			sleep(200);
         		}
                 break;
         

@@ -118,6 +118,9 @@ timing: system-routed.twr
 usage: system-routed.xdl
 	xdlanalyze.pl system-routed.xdl $(USAGE_DEPTH)
 
+upload:
+	nexys2prog -v system.bit
+
 ####################################################################
 # final targets
 
