@@ -9,12 +9,56 @@ module gpio_sevenseg
 	input           clk_i, 
 	output reg      [7:0] seg,
 	output          [3:0] an,
-    input           [3:0] gpio
+    input           [15:0] gpio
 );
+
+reg [2:0] counter;
+reg [3:0] gpio_source;
+reg [3:0] led_select;
 
 
 always @(posedge clk_i)
-case (gpio[3:0])
+begin
+  if (counter==3) begin
+      counter <= 0;
+  end
+  else begin
+    counter <= counter + 1;
+  end
+end
+
+
+always @(posedge clk_i)
+begin
+case (counter)
+  0:
+    begin 
+      gpio_source <= gpio[3:0];
+      led_select <= 4'b1110;
+  end
+  1:
+    begin
+      gpio_source <= gpio[7:4];
+      led_select <= 4'b1101;
+    end
+  2:
+    begin
+      gpio_source <= gpio[11:8];
+      led_select <= 4'b1011;
+    end
+  default:
+    begin
+      gpio_source <= gpio[15:12];
+      led_select <= 4'b0111;
+    end
+endcase
+end
+
+assign an = led_select;
+
+always @(posedge clk_i)
+begin
+case (gpio_source[3:0])
     4'h0: seg = 7'b1000000;
     4'h1: seg = 7'b1111001;
     4'h2: seg = 7'b0100100; 
@@ -32,8 +76,7 @@ case (gpio[3:0])
     4'he: seg = 7'b0000110; 
     default: seg = 7'b0001110;
 endcase     
-
-assign an[3:0] = 4'b1110;
+end
 
 endmodule 
 
