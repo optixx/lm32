@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 // LatticeMico32 System On A Chip
 //
-// Top Level Design for the Xilinx Spartan 3-200 Starter Kit
+// Top Level Design for the Digilent Nexsy2 Spartan 3e Board
 //---------------------------------------------------------------------------
 
 module gpio_sevenseg 
@@ -12,15 +12,24 @@ module gpio_sevenseg
     input           [15:0] gpio
 );
 
-reg [2:0] counter;
+reg [16:0] counter;
+reg [3:0] led_counter;
 reg [3:0] gpio_source;
 reg [3:0] led_select;
 
+initial begin
+    counter = 16'h0;
+    led_counter = 4'h0;
+end
 
 always @(posedge clk_i)
 begin
-  if (counter==3) begin
-      counter <= 0;
+  if (counter==16'hffff) begin
+      counter <= 16'h0;
+      led_counter <= led_counter + 1;
+      if (led_counter == 3) begin
+          led_counter <= 0;
+      end
   end
   else begin
     counter <= counter + 1;
@@ -30,7 +39,7 @@ end
 
 always @(posedge clk_i)
 begin
-case (counter)
+case (led_counter)
   0:
     begin 
       gpio_source <= gpio[3:0];

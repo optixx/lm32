@@ -125,11 +125,11 @@ int main(int argc, char **argv)
             case '6': 
             	uart_putstr( "GPIO Test 2...\r\n" );
             	gpio0->oe = 0x000000ff;
-        		for(i=0; i<255; i++) {
+        		for(i=0; i<0xffff; i++) {
                 	gpio0->out = i;
                     uart_puthex32(gpio0->out);
                 	uart_putstr( "\r\n" );
-        			sleep(200);
+        			sleep(50);
         		}
                 break;
         
