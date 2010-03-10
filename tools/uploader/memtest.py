@@ -23,6 +23,14 @@ class LM32Serial(object):
         self.io = serial.Serial(LM32Serial.DEV, LM32Serial.SPEED)
         self.debug = False
 
+    def progress(self):
+        sys.stdout.write(".")
+        sys.stdout.flush()
+
+    def info(self,msg):
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+
     def put_uint32(self,i):
         self.io.write( chr((i >> 24) & 0xff ))
         self.io.write( chr((i >> 16) & 0xff ))
@@ -31,17 +39,25 @@ class LM32Serial(object):
 
     def upload(self, addr, data):
         if self.debug:
-            print "upload 0x%08x (%i)" % (addr,len(data))
+            self.info("upload 0x%08x (%i)\n" % (addr,len(data)))
         self.io.write('u')
         self.put_uint32(addr)
         self.put_uint32(len(data))
         for v in data:
             self.io.write(v)
 
+    def upload_chunked(self, data, addr, size, block_size):
+        self.info("Uploading 0x%X (%i kb) to 0x%X..." % (size, size/1024, addr))
+        for i in range((size / block_size)):
+            self.progress()
+            offset = i * block_size
+            block = data[ offset : (offset + block_size) ]
+            self.upload( addr + i * block_size, block )
+        self.info("Done.\n")
 
     def download(self, addr, size):
         if self.debug:
-            print "download 0x%08x (%i)" % (addr,size)
+            self.info("download 0x%08x (%i)\n" % (addr,size))
         r = []
         self.io.write('d')
         self.put_uint32(addr)
@@ -49,46 +65,45 @@ class LM32Serial(object):
         for i in range(size):
             r.append(self.io.read(1))
         return r
-
+    
+    def download_chunked(self, addr, size, block_size):
+        self.info("Download 0x%X (%i kb) from 0x%X..." % (size, size/1024, addr))
+        data = []
+        for i in range((size / block_size)):
+            self.progress()
+            data += self.download( addr + i*block_size, block_size )
+        self.info("Done.\n")
+        return data
+        
     def find_bootloader(self, max_tries = 32):
+        self.info("Looking for soc-lm32 bootloader")
         count = 0;
         while True:
-            progress()
-            sys.stdout.flush()
+            self.progress()
             count = count + 1
             if count == max_tries:
                 die("Bootloader %s not not found" % BOOT_SIG)
             self.io.write('\r')
             line = self.io.readline()
             if line and LM32Serial.BOOT_SIG in line:
+                self.info("found.\n")
                 break
 
 def main():
     BLOCK_SIZE = 0x800
     TEST_SIZE  = 0x8000
     TEST_BASE  = 0x40000000
-    print "Looking for soc-lm32 bootloader",
-    sys.stdout.flush()
+    
     lm32 = LM32Serial()
     lm32.find_bootloader()
-    print "found."
+    
     data = []
     for x in range(TEST_SIZE):
         data.append(chr(random.randint(0,255)))
-    print "Uploading 0x%X (%i kb) random bytes to 0x%X..." % (TEST_SIZE, TEST_SIZE/1024,TEST_BASE),
-    for i in range((TEST_SIZE / BLOCK_SIZE)):
-        progress()
-        offset = i*BLOCK_SIZE
-        block = data[ offset : (offset+BLOCK_SIZE) ]
-        lm32.upload( TEST_BASE + i*BLOCK_SIZE, block )
-    print "Done."
-
-    print "Downloading again...",
-    read_data = []
-    for i in range((TEST_SIZE / BLOCK_SIZE)):
-        progress()
-        read_data += lm32.download( TEST_BASE + i*BLOCK_SIZE, BLOCK_SIZE )
-    print "Done."
+    
+    lm32.upload_chunked(data, TEST_BASE, TEST_SIZE, BLOCK_SIZE)
+    read_data = lm32.download_chunked( TEST_BASE, TEST_SIZE, BLOCK_SIZE )
+    
     print "Checking for memory errors...",
     for idx,val in enumerate(data):
         if idx%BLOCK_SIZE==0:
