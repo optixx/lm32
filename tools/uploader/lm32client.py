@@ -391,36 +391,37 @@ class LM32Serial(object):
                 self.info("found.\n")
                 break
 
-def memcheck():
-    BLOCK_SIZE = 0x800
-    TEST_SIZE  = 0x8000
-    TEST_BASE  = 0x40000000
+def memcheck(options):
+    
+    block_size = int(options.block_size,16)
+    test_size  = int(options.size,16)
+    test_base  = int(options.start_addr,16)
+    
+    print "Memcheck Addr=0x%X size=0x%X " % (test_base,test_size)
     
     lm32 = LM32Serial()
     lm32.find_bootloader()
     
     data = []
-    for x in range(TEST_SIZE):
+    for x in range(test_size):
         data.append(chr(random.randint(0,255)))
     
-    lm32.upload_chunked(data, TEST_BASE, TEST_SIZE, BLOCK_SIZE)
-    read_data = lm32.download_chunked( TEST_BASE, TEST_SIZE, BLOCK_SIZE )
+    lm32.upload_chunked(data, test_base, test_size, block_size)
+    read_data = lm32.download_chunked( test_base, test_size, block_size )
     
     print "Checking for memory errors...",
     for idx,val in enumerate(data):
-        if idx%BLOCK_SIZE==0:
-            progress()
         if val != read_data[idx]:
-            print "0x%X 0x%02x 0x%02x" % (TEST_BASE + idx,ord(val),ord(read_data[idx]))
+            print "0x%X 0x%02x != 0x%02x" % (test_base + idx,ord(val),ord(read_data[idx]))
     print "Done."
 
-def upload():
+def upload(options):
     BLOCK_SIZE = 0x800
     
     lm32 = LM32Serial()
     lm32.find_bootloader()
     addr_jump = None
-    data = open(sys.argv[1],"r").read().splitlines()
+    data = open(options.filename).read().splitlines()
     for line in data:
         line = line.strip()
         if line.startswith("S7"):
@@ -467,8 +468,69 @@ def upload():
     miniterm.start()
     miniterm.join(True)
 
+def main():
+    import optparse
 
+    parser = optparse.OptionParser(
+        usage = "%prog [options]",
+        description = "lm32clieant - A simple client to upload images"
+    )
+
+    parser.add_option("-p", "--port",
+        dest = "port",
+        help = "port, a number (default 0) or a device name (deprecated option)",
+        default = None
+    )
+
+    parser.add_option("-b", "--baud",
+        dest = "baudrate",
+        action = "store",
+        type = 'int',
+        help = "set baud rate, default %default",
+        default = 9600
+    )
+
+    parser.add_option("-f","--filename",
+        dest = "filename",
+        action = "store",
+        help = "set image filename",
+        default = ''
+    )
+
+    parser.add_option("-a", "--action",
+        dest = "action",
+        action = "store",
+        help = "Select mode [memcheck,upload])",
+        default = "upload"
+    )
+
+    parser.add_option("-s", "--start",
+        dest = "start_addr",
+        action = "store",
+        help = "Set start addr (hex)",
+        default = "0x40000000"
+    )
+    
+    parser.add_option("-S", "--size",
+        dest = "size",
+        action = "store",
+        help = "Set size (hex)",
+        default = "0x8000"
+    )
+
+    parser.add_option("-B", "--blocksize",
+        dest = "block_size",
+        action = "store",
+        help = "Set block size (hex)",
+        default = "0x800"
+    )
+
+    (options, args) = parser.parse_args()
+    if options.action =='memcheck':
+        memcheck(options)
+    else:
+        upload(options)
 if __name__ == '__main__':
-    upload()
+    main()
 
 
