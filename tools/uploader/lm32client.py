@@ -421,7 +421,7 @@ def upload(options):
     lm32 = LM32Serial()
     lm32.find_bootloader()
     addr_jump = None
-    data = open(options.filename).read().splitlines()
+    data = open(options.filename_srec).read().splitlines()
     for line in data:
         line = line.strip()
         if line.startswith("S7"):
@@ -438,6 +438,7 @@ def upload(options):
             lm32.upload(addr,data)    
     lm32.jump(addr_jump)
 
+def mterm(options):
 
     try:
         miniterm = Miniterm(
@@ -468,6 +469,14 @@ def upload(options):
     miniterm.start()
     miniterm.join(True)
 
+def debugger(options):
+    fd = open("remote.gdb","w")
+    fd.write("target remote /dev/ttyUSB0\n")
+    fd.close()
+    cmd = "cgdb -d lm32-elf-gdb  -x remote.gdb %s" % options.filename_elf
+    print "Execute: %s" % cmd
+    os.system(cmd)
+    
 def main():
     import optparse
 
@@ -491,9 +500,9 @@ def main():
     )
 
     parser.add_option("-f","--filename",
-        dest = "filename",
+        dest = "filename_srec",
         action = "store",
-        help = "set image filename",
+        help = "set srec image filename for upload",
         default = ''
     )
 
@@ -525,11 +534,37 @@ def main():
         default = "0x800"
     )
 
+    parser.add_option("-m", "--miniterm",
+        dest = "miniterm",
+        action = "store_true",
+        help = "Start miniterm after action",
+        default = False
+    )
+
+    parser.add_option("-d", "--debugger",
+        dest = "debugger",
+        action = "store_true",
+        help = "Start debugger cgdb",
+        default = False
+    )
+    
+    parser.add_option("-e", "--elf",
+        dest = "filename_elf",
+        action = "store",
+        help = "Set elf filename for debugger",
+        default = False
+    )
+
     (options, args) = parser.parse_args()
     if options.action =='memcheck':
         memcheck(options)
     else:
         upload(options)
+    if options.miniterm:
+        mterm(options)
+    if options.debugger:
+        debugger(options)
+
 if __name__ == '__main__':
     main()
 
