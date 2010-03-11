@@ -498,14 +498,14 @@ def main():
         action = "store",
         type = 'int',
         help = "set baud rate, default %default",
-        default = 9600
+        default = 115200
     )
 
     parser.add_option("-f","--filename",
         dest = "filename_srec",
         action = "store",
         help = "set srec image filename for upload",
-        default = ''
+        default = None
     )
 
     parser.add_option("-a", "--action",
@@ -554,17 +554,27 @@ def main():
         dest = "filename_elf",
         action = "store",
         help = "Set elf filename for debugger",
-        default = False
+        default = None
     )
 
     (options, args) = parser.parse_args()
     if options.action =='memcheck':
         memcheck(options)
-    else:
+    elif options.action =='upload':
+        if options.filename_srec is None: 
+            parser.error("Need to specify a srecord filename")
+        if not os.path.isfile(options.filename_srec):
+            parser.error("Can't access srecord file %s" % options.filename_srec)
+        
         upload(options)
+        
     if options.miniterm:
         mterm(options)
     if options.debugger:
+        if options.filename_elf is None: 
+            parser.error("Need to specify elf filename")
+        if not os.path.isfile(options.filename_elf):
+            parser.error("Can't access elf file %s" % options.filename_elf)
         debugger(options)
 
 if __name__ == '__main__':
