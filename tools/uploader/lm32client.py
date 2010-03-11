@@ -476,7 +476,9 @@ def debugger(options):
     cmd = "cgdb -d lm32-elf-gdb  -x remote.gdb %s" % options.filename_elf
     print "Execute: %s" % cmd
     os.system(cmd)
-    
+    if os.path.isfile("remote.gdb"):
+        os.unlink("remote.gdb")
+        
 def main():
     import optparse
 
