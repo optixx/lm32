@@ -41,7 +41,7 @@ $(VRAMFILE): image.srec
 	$(SREC2VRAM) image.srec 0x00000000 0x1000 > $(VRAMFILE)
 
 clean:
-	rm -f image image.lst image.bin image.srec image.map  *.o *.d
+	rm -f image image.lst image.bin image.srec image.map image.hex image.ram  *.o *.d
 
 DEPS := $(wildcard *.d)
 ifneq ($(DEPS),)
