@@ -47,7 +47,7 @@ SYNCLEAN+=system.bld system.lso system.ncd system.ngm system.srp
 SYNCLEAN+=system.bit system_signalbrowser.* system-routed_pad.tx
 SYNCLEAN+=system.map system_summary.xml timing.twr
 SYNCLEAN+=system-routed* system_usage* system.ngc param.opt netlist.lst
-SYNCLEAN+=xst system.prj system*.xrpt smartpreview.twr system.svf _impact.log
+SYNCLEAN+=xst system.prj system*.xrpt smartpreview.twr system.svf _impactbatch.log
 
 USAGE_DEPTH=0
 SMARTGUIDE= 
