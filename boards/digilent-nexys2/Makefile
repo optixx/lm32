@@ -12,7 +12,9 @@ SIM_SRC=                                  \
 	../../sim/unisims/DCM.v
 
 SRC=                                      \
-	system.v                              \
+	system.v 							  \
+	sevenseg.v                            \
+	clockdivide.v                         \
 	../../rtl/lac/lac.v                   \
 	../../rtl/lac/uart.v                  \
 	../../rtl/lac/dp_ram.v                \
@@ -37,8 +39,9 @@ SRC=                                      \
 	../../rtl/wb_gpio/wb_gpio.v           \
 	../../rtl/wb_conbus/wb_conbus_top.v   \
 	../../rtl/wb_conbus/wb_conbus_arb.v   \
-	../../rtl/wb_sram/wb_sram16.v
-
+	../../rtl/wb_sram/wb_sram16.v         \
+	../../rtl/wb_spi/wb_spi.v             
+	
 	#../../rtl/wb_uart/uart.v              \
 #############################################################################
 # Syntheis constants

@@ -87,7 +87,7 @@ NET "sw<1>" LOC = "H18" | IOSTANDARD = LVTTL;
 #NET "sram_dat<0>"   LOC = "L1" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 
 
-# 7 segment display
+# ==== SEVEN SEG  ====
 NET "seg<0>" LOC = "L18" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "seg<1>" LOC = "F18" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "seg<2>" LOC = "D17" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
@@ -101,3 +101,17 @@ NET "an<1>" LOC = "H17" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "an<2>" LOC = "C18" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "an<3>" LOC = "F15" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 
+
+# ==== SDCARD  ====
+#Pin  	FPGA Function  	Card Function
+#1 	I/O 	DAT0/MISO
+#2 	I/O 	CLK/SCK
+#3 	I/O 	CD/CS
+#4 	I/O 	CMD/MOSI
+#5 	GND 	GND
+#6 	VCC 	VCC
+
+NET "sd_miso" LOC = "L15" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sd_clk"  LOC = "K12" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sd_cs"   LOC = "L17" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+NET "sd_mosi" LOC = "M15" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
