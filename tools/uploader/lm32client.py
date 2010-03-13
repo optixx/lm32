@@ -512,7 +512,7 @@ def main():
         dest = "action",
         action = "store",
         help = "Select mode [memcheck,upload])",
-        default = "upload"
+        default = None
     )
 
     parser.add_option("-s", "--start",
