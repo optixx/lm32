@@ -18,6 +18,7 @@
 *.lst
 *.par
 *.xrpt
+*.vvp*
 *.mrp
 *.ngd
 *.ptwx
@@ -27,8 +28,13 @@
 *.unroutes
 *.log
 *.ram
+*.bin
 *.srec
 *.svf
 log
 image
-
+*.twr
+*.lso
+*routed_pad.txt
+*xlnx_auto_0_xdb*
+*xst
