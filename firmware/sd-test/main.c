@@ -76,8 +76,6 @@ int main()
 	// Initialize TIC
 	isr_init();
 	tic_init();
-	//irq_set_mask( 0x00000002 );
-	//irq_enable();
 	
     msleep(1000);
 	uart_putstr("Bootloader init\n\r"); 
