@@ -256,7 +256,7 @@ DSTATUS disk_initialize (void)
 			}
 		}
 
-	        uart_putstr("CMD16\r\n");
+	    uart_putstr("CMD16\r\n");
 		if (f && (send_cmd(CMD16, 512) == 0))	/* Select R/W block length */
 			f = 2;
 

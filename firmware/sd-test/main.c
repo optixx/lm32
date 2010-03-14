@@ -74,20 +74,20 @@ int main()
 	uint32_t i;
 	
 	// Initialize TIC
-	//isr_init();
-	//tic_init();
+	isr_init();
+	tic_init();
 	//irq_set_mask( 0x00000002 );
 	//irq_enable();
 	
+    msleep(1000);
 	uart_putstr("Bootloader init\n\r"); 
-		
-	memset(&fs, 0, sizeof(FATFS)); 	/* Clear file system object */
+	
+    memset(&fs, 0, sizeof(FATFS)); 	/* Clear file system object */
 	FatFs = &fs;	                /* Assign it to the FatFs module */	
 
-	uart_putstr("Looking for sys/irmware.bin\n\r"); 
+	uart_putstr("Looking for sys/firmware.bin\n\r"); 
 	const char firmware[] = "sys/firmware.bin";
-
-
+ 
 	fresult = f_open(&fil, firmware,  FA_READ|FA_OPEN_EXISTING);
 	uart_putstr("Got fresult\n\r"); 
 		
