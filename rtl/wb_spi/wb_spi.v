@@ -3,6 +3,24 @@
 //-----------------------------------------------------------------
 
 module wb_spi(
+	clk,
+	reset,
+    // Whishbone 	
+    wb_adr_i,
+	wb_dat_i,
+	wb_dat_o,
+	wb_sel_i,
+	wb_cyc_i,
+	wb_stb_i,
+	wb_ack_o,
+	wb_we_i,
+	// SPI 
+	spi_sck,
+	spi_mosi,
+	spi_miso,
+	spi_cs
+);
+
 	input               clk;
 	input               reset;
 	// Wishbone bus
@@ -19,11 +37,9 @@ module wb_spi(
 	output              spi_mosi;
 	input               spi_miso;
 	output reg   [7:0]  spi_cs;
-);
-
-
 	reg  ack;
-	assign wb_ack_o = wb_stb_i & wb_cyc_i & ack;
+	
+    assign wb_ack_o = wb_stb_i & wb_cyc_i & ack;
 
 	wire wb_rd = wb_stb_i & wb_cyc_i & ~ack & ~wb_we_i;
 	wire wb_wr = wb_stb_i & wb_cyc_i & ~ack & wb_we_i;

@@ -11,16 +11,19 @@ module system
 	parameter   uart_baud_rate   = 115200
 ) (
 	input                   clk, 
-	// Debug 
+	
+    // Debug 
 	output            [7:0] led,
 	input             [3:0] btn,
 	input             [7:0] sw,
 	output            [6:0] seg,
 	output            [3:0] an,
-	// UART
+	
+    // UART
 	input                   uart_rxd, 
-	output                  uart_txd
-	// SRAM
+	output                  uart_txd,
+	
+    // SRAM
 	//output           [22:0] sram_adr,
 	//inout            [15:0] sram_dat,
 	//output            [1:0] sram_be_n,    // Byte   Enable
@@ -28,14 +31,19 @@ module system
 	//output                  sram_oe_n,    // Output Enable
 	//output                  sram_we_n,    // Write  Enable
 	//output                  sram_ub,      // Upper byte Enable
-	//output                  sram_lb,      // Lower byte Enable
+	//output                  sram_lb,      // Lower byte Enablee
 	//output                  sram_clk,     // Clock
 	//input                   sram_wait,    // Wait
 	//output                  sram_cre,     // 
 	//output                  sram_adv,
 	//output                  flash_cs,     // Flash chip select 
 	//output                  flash_rp      // Flash chip select 
-
+    
+    // SDcard
+    output                  sd_clk,
+    output                  sd_cmd,
+    output                  sd_dat3,
+    output                  sd_dat
 );
 	
 wire         rst;
@@ -54,8 +62,8 @@ wire [31:0]  lm32i_adr,
              timer0_adr,
              gpio0_adr,
              bram0_adr,
-             bram1_adr;
-
+             bram1_adr,
+             spi0_adr;
 
 wire [31:0]  lm32i_dat_r,
              lm32i_dat_w,
@@ -70,7 +78,9 @@ wire [31:0]  lm32i_dat_r,
              bram0_dat_r,
              bram0_dat_w,
              bram1_dat_w,
-             bram1_dat_r;
+             bram1_dat_r,
+             spi0_dat_w,
+             spi0_dat_r;
 
 wire [3:0]   lm32i_sel,
              lm32d_sel,
@@ -78,7 +88,8 @@ wire [3:0]   lm32i_sel,
              timer0_sel,
              gpio0_sel,
              bram0_sel,
-             bram1_sel;
+             bram1_sel,
+             spi0_sel;
 
 wire         lm32i_we,
              lm32d_we,
@@ -86,7 +97,8 @@ wire         lm32i_we,
              timer0_we,
              gpio0_we,
              bram0_we,
-             bram1_we;
+             bram1_we,
+             spi0_we;
 
 wire         lm32i_cyc,
              lm32d_cyc,
@@ -94,7 +106,8 @@ wire         lm32i_cyc,
              timer0_cyc,
              gpio0_cyc,
              bram0_cyc,
-             bram1_cyc;
+             bram1_cyc,
+             spi0_cyc;
 
 wire         lm32i_stb,
              lm32d_stb,
@@ -102,7 +115,8 @@ wire         lm32i_stb,
              timer0_stb,
              gpio0_stb,
              bram0_stb,
-             bram1_stb;
+             bram1_stb,
+             spi0_stb;
 
 wire         lm32i_ack,
              lm32d_ack,
@@ -110,7 +124,8 @@ wire         lm32i_ack,
              timer0_ack,
              gpio0_ack,
              bram0_ack,
-             bram1_ack;
+             bram1_ack,
+             spi0_ack;
 
 wire         lm32i_rty,
              lm32d_rty;
@@ -148,7 +163,7 @@ wb_conbus_top #(
 	.s3_addr   ( 15'h7000 ),    // uart0
 	.s4_addr   ( 15'h7001 ),    // timer0
 	.s5_addr   ( 15'h7002 ),    // gpio0
-	.s6_addr   ( 15'h7003 ),
+	.s6_addr   ( 15'h7003 ),    // spi0
 	.s7_addr   ( 15'h7004 )
 ) conmax0 (
 	.clk_i( clk ),
@@ -273,10 +288,17 @@ wb_conbus_top #(
 	.s5_err_i(  gnd          ),
 	.s5_rty_i(  gnd          ),
 	// Slave6
-	.s6_dat_i(  gnd32  ),
-	.s6_ack_i(  gnd    ),
-	.s6_err_i(  gnd    ),
-	.s6_rty_i(  gnd    ),
+	.s6_dat_i(  spi0_dat_r   ),
+	.s6_dat_o(  spi0_dat_w   ),
+	.s6_adr_o(  spi0_adr     ),
+	.s6_sel_o(  spi0_sel     ),
+	.s6_we_o(   spi0_we      ),
+	.s6_cyc_o(  spi0_cyc     ),
+	.s6_stb_o(  spi0_stb     ),
+	.s6_ack_i(  spi0_ack     ),
+	.s6_err_i(  gnd          ),
+	.s6_rty_i(  gnd          ),
+
 	// Slave7
 	.s7_dat_i(  gnd32  ),
 	.s7_ack_i(  gnd    ),
@@ -392,6 +414,9 @@ wb_sram16 #(
 	.sram_we_n(   sram_we_n     )
 );
 
+assign sram_lb_n = sram_be_n[0];
+assign sram_ub_n = sram_be_n[1];
+
 */
 
 //---------------------------------------------------------------------------
@@ -466,6 +491,29 @@ wb_gpio gpio0 (
 	.gpio_oe(  gpio0_oe     )
 );
 
+//---------------------------------------------------------------------------
+// spi0
+//---------------------------------------------------------------------------
+
+wb_spi spi0 (
+	.clk(      clk          ),
+	.reset(    rst          ),
+	//
+	.wb_adr_i( spi0_adr   ),
+	.wb_dat_i( spi0_dat_w ),
+	.wb_dat_o( spi0_dat_r ),
+	.wb_stb_i( spi0_stb   ),
+	.wb_cyc_i( spi0_cyc   ),
+	.wb_we_i(  spi0_we    ),
+	.wb_sel_i( spi0_sel   ),
+	.wb_ack_o( spi0_ack   ),
+	.spi_sck(  sd_clk     ),
+	.spi_mosi( sd_cmd     ),
+	.spi_miso( sd_dat     ),
+	.spi_cs(   sd_dat3    )
+);
+
+
 //----------------------------------------------------------------------------
 // Enable PSRAM
 //----------------------------------------------------------------------------
@@ -527,7 +575,7 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
 */
 
 //---------------------------------------------------------------------------
-// Sevensegment
+// Seven Segment
 //---------------------------------------------------------------------------
 gpio_sevenseg gpio_sevenseg0 (
 	.clk_i( clk ),
@@ -535,7 +583,6 @@ gpio_sevenseg gpio_sevenseg0 (
 	.an( an ),
 	.gpio( gpio0_out )
 );
-
 
 //----------------------------------------------------------------------------
 // Mux UART wires according to sw[0]
@@ -556,6 +603,7 @@ assign rst             = (sw[1]) ?      1'b0 : btn[0];
 assign gpio0_in[11: 8] = (sw[1]) ?       btn : 4'b0;
 assign gpio0_in[31:12] = 20'b0;
 assign gpio0_in[ 7: 0] =  8'b0;
+
 endmodule    
     
 

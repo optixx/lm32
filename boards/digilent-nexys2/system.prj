@@ -1,4 +1,5 @@
 verilog worlk system.v
+verilog worlk sevenseg.v
 verilog worlk ../../rtl/lac/lac.v
 verilog worlk ../../rtl/lac/uart.v
 verilog worlk ../../rtl/lac/dp_ram.v
@@ -20,6 +21,7 @@ verilog worlk ../../rtl/lm32/lm32_ram.v
 verilog worlk ../../rtl/wb_bram/wb_bram.v
 verilog worlk ../../rtl/wb_uart/wb_uart.v
 verilog worlk ../../rtl/wb_timer/wb_timer.v
+verilog worlk ../../rtl/wb_spi/wb_spi.v
 verilog worlk ../../rtl/wb_gpio/wb_gpio.v
 verilog worlk ../../rtl/wb_conbus/wb_conbus_top.v
 verilog worlk ../../rtl/wb_conbus/wb_conbus_arb.v
