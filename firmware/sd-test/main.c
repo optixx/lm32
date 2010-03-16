@@ -73,7 +73,6 @@ int main()
 	int8_t  *p;
 	uint32_t i;
 	
-	// Initialize TIC
 	isr_init();
 	tic_init();
 	
@@ -107,13 +106,23 @@ int main()
 	}
 
 	uart_putstr("loading\n\r");
-	for (i = 0; i < fil.fsize && i < 1024*(512 - 16); i += 64*1024 - 1)	{ // 64*1024 - 1 is the highes 16 bit number
+	uart_putstr("file size: 0x");
+	writeint(8, fil.fsize);
+	uart_putstr("\n\r");
+    /*
+    for (i = 0; i < fil.fsize && i < 1024*(512 - 16); i += 64*1024 - 1)	{ 
 		f_read (&fil, (uint8_t*) (0x40000000+i), 64*1024 - 1, &fsize);
 		uart_putstr("\nread bytes: 0x");
 		writeint(8, i+fsize);
 	}
 	jump(0x40000000);
-	
+    */
+
+    for (i = 0; i < fil.fsize; i += 1024)	{ 
+		f_read (&fil, (uint8_t*) (0x40000000), 1024, &fsize);
+		uart_putstr("\nread bytes: 0x");
+		writeint(8, i+fsize);
+	}
 uartmode: 
 	uart_putstr("\r\n** SPIKE BOOTLOADER **\n");
 	for(;;) {
@@ -126,6 +135,10 @@ uartmode:
     			jump(0x00000000);
     			break;
 
+    		case 's': // start 
+    			jump(0x4007C000);
+    			break;
+                
 			case 'm': // memtest
 				memtest();
 				break;

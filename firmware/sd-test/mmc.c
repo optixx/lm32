@@ -30,32 +30,13 @@
 #define SELECT()	spi0->cs = 0		/* MMC CS = L */
 #define	DESELECT()	spi0->cs = 1		/* MMC CS = H */
 
-//#define SOCKPORT	PINB			/* Socket contact port */
-//#define SOCKWP		0x20			/* Write protect switch (PB5) */
-//#define SOCKINS		0x10			/* Card detect switch (PB4) */
-
-//#define POWER_ON()	PORTE &= ~0x80	/* Socke power (PE7) */
-//#define POWER_OFF()	PORTE |=  0x80
-
-
 static volatile
 DSTATUS Stat = STA_NOINIT;	/* Disk status */
 
 static volatile
 BYTE Timer1, Timer2;		/* 100Hz decrement timer */
 
-
-//void xputc(char);
-
-/*-----------------------------------------------------------------------*/
-/* Module Private Functions                                              */
-
-
-/*--------------------------------*/
-/* Transmit a byte to MMC via SPI */
-/* (Platform dependent)           */
-
-#define xmit_spi(dat) 	spi0->data=(dat); while(spi0->status & 0x01)
+//#define xmit_spi(dat) 	spi0->data=(dat); while(spi0->status & 0x01)
 
 
 
@@ -66,14 +47,36 @@ BYTE Timer1, Timer2;		/* 100Hz decrement timer */
 static
 BYTE rcvr_spi (void)
 {
-	spi0->data=0xff;
-	while(spi0->status & 0x01);
+    spi0->data=0xff;	
+
+    while(spi0->status & 0x01);
+    
+        uart_putstr("read spi data=0x");
+        uart_puthex8(spi0->data);
+        uart_putstr(" status=0x");
+        uart_puthex8(spi0->status);
+        uart_putstr("\n\r");
+
     return spi0->data;
 }
 
+static
+void  xmit_spi (BYTE value)
+{
+    spi0->data=value;	
+
+    while(spi0->status & 0x01);
+    
+        uart_putstr("write spi data=0x");
+        uart_puthex8(value);
+        uart_putstr(" status=0x");
+        uart_puthex8(spi0->status);
+        uart_putstr("\n\r");
+}
+
+
 /* Alternative macro to receive data fast */
 #define rcvr_spi_m(dst)	spi0->data=0xff;	while(spi0->status & 0x01); *(dst)=spi0->data
-
 
 /*---------------------*/
 /* Wait for card ready */
@@ -82,15 +85,17 @@ static
 BYTE wait_ready (void)
 {
 	BYTE res;
-
+    uart_putstr("wait_ready: ");
 	Timer2 = 50;	/* Wait for ready in timeout of 500ms */
 	rcvr_spi();
-	do
+    do
 		res = rcvr_spi();
-	while ((res != 0xFF) && Timer2);
+	while ((res != 0xFF) && Timer2--);
 
     if (res != 0xff)
-        uart_putstr("W");
+        uart_putstr("is not ready\r\n");
+    else
+        uart_putstr("\r\n");
 	return res;
 }
 
@@ -106,9 +111,6 @@ BOOL rcvr_datablock (
 )
 {
 	BYTE token;
-
-	uart_putstr("rcvr_datablock  \r\n");
-
 	Timer1 = 10;
 	do {							/* Wait for data packet in timeout of 100ms */
 		token = rcvr_spi();
@@ -138,9 +140,6 @@ BOOL xmit_datablock (
 )
 {
 	BYTE resp, wc = 0;
-
-	uart_putstr("xmit_datablock \r\n");
-
 	if (wait_ready() != 0xFF) return FALSE;
 
 	xmit_spi(token);					/* Xmit data token */
@@ -172,14 +171,10 @@ BYTE send_cmd (
 )
 {
 	BYTE n, res;
-
-	//uart_putstr("send_cmd");
-    //uart_puthex8 (cmd);
-	//uart_putstr("\r\n");
-
-	if (wait_ready() != 0xFF) return 0xFF;
-
-	/* Send command packet */
+	
+    if (wait_ready() != 0xFF) return 0xFF;
+	
+    /* Send command packet */
 	xmit_spi(cmd);						/* Command */
 	xmit_spi((BYTE)(arg >> 24));		/* Argument[31..24] */
 	xmit_spi((BYTE)(arg >> 16));		/* Argument[23..16] */
@@ -192,7 +187,6 @@ BYTE send_cmd (
 	n = 10;								/* Wait for a valid response in timeout of 10 attempts */
 	do {
 		res = rcvr_spi();
-        uart_putstr("R");
     } while ((res & 0x80) && --n);
 
 	return res;			/* Return with the response value */
@@ -201,41 +195,24 @@ BYTE send_cmd (
 
 
 
-/*-----------------------------------------------------------------------*/
-/* Public Functions                                                      */
-
-
-/*-----------------------*/
-/* Initialize Disk Drive */
-/* (Platform dependent)  */
-
 DSTATUS disk_initialize (void)
 {
 	BYTE n, f;
 
-
-//	POWER_ON();					/* Socket power ON */
-//	for (Timer1 = 3; Timer1; );	/* Wait for 30ms */
-
-
 	uart_putstr("deselect\r\n");
 	DESELECT();
-	
-	Stat = 0;//XXX: only for testing
+    Stat = 0;//XXX: only for testing
 	
 	f = 0;
 	if (!(Stat & STA_NODISK)) {
-		n = 10;						/* Dummy clock */
-		
+		n = 10;						            /* Dummy clock */
 	    uart_putstr("clock\r\n");
         do
 			rcvr_spi();
 		while (--n);
-
 	    uart_putstr("select\r\n");
-		SELECT();			/* CS = L */
-
-	    uart_putstr("CMD0\r\n");
+		SELECT();			                    /* CS = L */
+        uart_putstr("CMD0\r\n");
 		if (send_cmd(CMD0, 0) == 1) {			/* Enter Idle state */
 			Timer1 = 50;						/* Initialization timeout of 500 msec */
 	        uart_putstr("CMD1\r\n");
@@ -259,7 +236,6 @@ DSTATUS disk_initialize (void)
 	    uart_putstr("CMD16\r\n");
 		if (f && (send_cmd(CMD16, 512) == 0))	/* Select R/W block length */
 			f = 2;
-
 	    uart_putstr("deselect\r\n");
 		DESELECT();			/* CS = H */
 		rcvr_spi();			/* Idle (Release DO) */
@@ -284,11 +260,6 @@ DSTATUS disk_initialize (void)
 
 DSTATUS disk_shutdown (void)
 {
-	//SPCR = 0;				/* Disable SPI function */
-	//DDRB  = 0b11000000;		/* Disable drivers */
-	//PORTB = 0b10110000;
-	//POWER_OFF();			/* Socket power OFF */
-
 	Stat |= STA_NOINIT;
 
 	return Stat;
