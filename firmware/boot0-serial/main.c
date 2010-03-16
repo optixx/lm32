@@ -22,7 +22,7 @@ uint32_t read_uint32()
 #define     TEST_PATTERN        0x41424142
 
 void display_addr(int addr){
-    gpio0->out = addr >> 16;
+    gpio0->out = addr;
 }
 
 void display_int(int val){
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     		case 'u': // upload 
     			start = read_uint32();
     			size  = read_uint32();
-                display_int(size);
+                display_addr(start);
     			for (p = (int8_t *) start; p < (int8_t *) (start+size); p++) {
     				*p = uart_getchar();
     			}
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     			break;
     		case 'g': // goto
     			start = read_uint32();
-    			display_int(0);
+    			display_int(0xdead);
                 jump(start);
 
     			break;   
