@@ -76,7 +76,7 @@ int main()
 	isr_init();
 	tic_init();
 	
-    msleep(1000);
+    msleep(500);
 	uart_putstr("Bootloader init\n\r"); 
 	
     memset(&fs, 0, sizeof(FATFS)); 	/* Clear file system object */
@@ -109,20 +109,14 @@ int main()
 	uart_putstr("file size: 0x");
 	writeint(8, fil.fsize);
 	uart_putstr("\n\r");
-    /*
+    
     for (i = 0; i < fil.fsize && i < 1024*(512 - 16); i += 64*1024 - 1)	{ 
 		f_read (&fil, (uint8_t*) (0x40000000+i), 64*1024 - 1, &fsize);
 		uart_putstr("\nread bytes: 0x");
 		writeint(8, i+fsize);
 	}
 	jump(0x40000000);
-    */
 
-    for (i = 0; i < fil.fsize; i += 1024)	{ 
-		f_read (&fil, (uint8_t*) (0x40000000), 1024, &fsize);
-		uart_putstr("\nread bytes: 0x");
-		writeint(8, i+fsize);
-	}
 uartmode: 
 	uart_putstr("\r\n** SPIKE BOOTLOADER **\n");
 	for(;;) {

@@ -25,8 +25,6 @@
 #define CMD55	(0x40+55)	/* APP_CMD */
 #define CMD58	(0x40+58)	/* READ_OCR */
 
-
-/* Control signals (Platform dependent) */
 #define SELECT()	spi0->cs = 0		/* MMC CS = L */
 #define	DESELECT()	spi0->cs = 1		/* MMC CS = H */
 
@@ -36,44 +34,37 @@ DSTATUS Stat = STA_NOINIT;	/* Disk status */
 static volatile
 BYTE Timer1, Timer2;		/* 100Hz decrement timer */
 
-//#define xmit_spi(dat) 	spi0->data=(dat); while(spi0->status & 0x01)
 
+#define DEBUG 0
 
-
-/*---------------------------------*/
-/* Receive a byte from MMC via SPI */
-/* (Platform dent)            */
 
 static
 BYTE rcvr_spi (void)
 {
     spi0->data=0xff;	
-
     while(spi0->status & 0x01);
-    
-        uart_putstr("read spi data=0x");
-        uart_puthex8(spi0->data);
-        uart_putstr(" status=0x");
-        uart_puthex8(spi0->status);
-        uart_putstr("\n\r");
-
+#if DEBUG 
+    uart_putstr("read spi data=0x");
+    uart_puthex8(spi0->data);
+    uart_putstr("\n\r");
+#endif
     return spi0->data;
 }
 
-static
+
+#if DEBUG 
+static 
 void  xmit_spi (BYTE value)
 {
     spi0->data=value;	
-
     while(spi0->status & 0x01);
-    
-        uart_putstr("write spi data=0x");
-        uart_puthex8(value);
-        uart_putstr(" status=0x");
-        uart_puthex8(spi0->status);
-        uart_putstr("\n\r");
+    uart_putstr("write spi data=0x");
+    uart_puthex8(value);
+    uart_putstr("\n\r");
 }
-
+#else
+    #define xmit_spi(dat) 	spi0->data=(dat); while(spi0->status & 0x01)
+#endif
 
 /* Alternative macro to receive data fast */
 #define rcvr_spi_m(dst)	spi0->data=0xff;	while(spi0->status & 0x01); *(dst)=spi0->data
@@ -85,8 +76,10 @@ static
 BYTE wait_ready (void)
 {
 	BYTE res;
+#if DEBUG 
     uart_putstr("wait_ready: ");
-	Timer2 = 50;	/* Wait for ready in timeout of 500ms */
+#endif
+    Timer2 = 50;	/* Wait for ready in timeout of 500ms */
 	rcvr_spi();
     do
 		res = rcvr_spi();
@@ -98,8 +91,6 @@ BYTE wait_ready (void)
         uart_putstr("\r\n");
 	return res;
 }
-
-
 
 /*--------------------------------*/
 /* Receive a data packet from MMC */
@@ -199,32 +190,46 @@ DSTATUS disk_initialize (void)
 {
 	BYTE n, f;
 
-	uart_putstr("deselect\r\n");
-	DESELECT();
+	
+    DESELECT();
     Stat = 0;//XXX: only for testing
 	
 	f = 0;
 	if (!(Stat & STA_NODISK)) {
 		n = 10;						            /* Dummy clock */
-	    uart_putstr("clock\r\n");
+#if DEBUG 	    
+        uart_putstr("clock\r\n");
+#endif        
         do
 			rcvr_spi();
 		while (--n);
+#if DEBUG 	    
 	    uart_putstr("select\r\n");
+#endif        
 		SELECT();			                    /* CS = L */
+#if DEBUG 	    
         uart_putstr("CMD0\r\n");
+#endif        
 		if (send_cmd(CMD0, 0) == 1) {			/* Enter Idle state */
 			Timer1 = 50;						/* Initialization timeout of 500 msec */
+#if DEBUG 	    
 	        uart_putstr("CMD1\r\n");
+#endif        
             while (Timer1-- && send_cmd(CMD1, 0))	  /* Initialize with CMD1 */
+#if DEBUG 	    
 			    uart_putstr("CMD1\r\n");
+#endif        
             if (Timer1) {
 				f = 1;							/* When device goes ready, break */
+#if DEBUG 	    
 	            uart_putstr("driver ready\r\n");
+#endif        
 			} else {
 				Timer1 = 100;
 				while (Timer1) {				/* Retry initialization with ACMD41 */
+#if DEBUG 	    
 	                uart_putstr("CMD55\r\n");
+#endif        
 					if (send_cmd(CMD55, 0) & 0xFE) continue;
 					if (send_cmd(CMD41, 0) == 0) {
 						f = 1; break;			/* When device goes ready, break */
@@ -233,20 +238,24 @@ DSTATUS disk_initialize (void)
 			}
 		}
 
+#if DEBUG 	    
 	    uart_putstr("CMD16\r\n");
+#endif        
 		if (f && (send_cmd(CMD16, 512) == 0))	/* Select R/W block length */
 			f = 2;
+#if DEBUG 	    
 	    uart_putstr("deselect\r\n");
+#endif        
 		DESELECT();			/* CS = H */
 		rcvr_spi();			/* Idle (Release DO) */
 	}
 
 	if (f == 2){
 		Stat &= ~STA_NOINIT;	/* When initialization succeeded, clear STA_NOINIT */
-	    uart_putstr("init ok\r\n");
+	    uart_putstr("Disk init ok\r\n");
     } else {
 		disk_shutdown();		/* Otherwise force uninitialized */
-	    uart_putstr("disk shutdown\r\n");
+	    uart_putstr("Disk shutdown\r\n");
     }
 	return Stat;
 }
@@ -261,7 +270,6 @@ DSTATUS disk_initialize (void)
 DSTATUS disk_shutdown (void)
 {
 	Stat |= STA_NOINIT;
-
 	return Stat;
 }
 
