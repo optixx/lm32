@@ -1,28 +1,26 @@
-//-----------------------------------------------------------------
-// SPI Master
-//-----------------------------------------------------------------
 
 module wb_spi(
 	clk,
-	reset,
-    // Whishbone 	
+    reset,
+    
     wb_adr_i,
-	wb_dat_i,
-	wb_dat_o,
-	wb_sel_i,
-	wb_cyc_i,
-	wb_stb_i,
-	wb_ack_o,
-	wb_we_i,
-	// SPI 
+    wb_dat_i,
+    wb_dat_o,
+    wb_sel_i,
+    wb_cyc_i,
+    wb_stb_i,
+    wb_ack_o,
+    wb_we_i,
+    
 	spi_sck,
 	spi_mosi,
 	spi_miso,
 	spi_cs
 );
 
-	input               clk;
-	input               reset;
+	input		clk;
+	input		reset;
+
 	// Wishbone bus
 	input      [31:0]   wb_adr_i;
 	input      [31:0]   wb_dat_i;
@@ -32,14 +30,15 @@ module wb_spi(
 	input               wb_stb_i;
 	output              wb_ack_o;
 	input               wb_we_i;
-	// SPI 
+
 	output              spi_sck;
 	output              spi_mosi;
 	input               spi_miso;
-	output reg   [7:0]  spi_cs;
+	output reg          spi_cs;
+
+
 	reg  ack;
-	
-    assign wb_ack_o = wb_stb_i & wb_cyc_i & ack;
+	assign wb_ack_o = wb_stb_i & wb_cyc_i & ack;
 
 	wire wb_rd = wb_stb_i & wb_cyc_i & ~ack & ~wb_we_i;
 	wire wb_wr = wb_stb_i & wb_cyc_i & ~ack & wb_we_i;
@@ -105,7 +104,7 @@ module wb_spi(
 							run     <=  1'b1;
 						end
 					4'b0010:
-							spi_cs  <=  wb_dat_i[7:0];
+							spi_cs  <=  wb_dat_i[0];
 					4'b0100: 
 							divisor <=  wb_dat_i[7:0];
 				endcase
