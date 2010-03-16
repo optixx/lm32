@@ -41,13 +41,12 @@ module system
     
     // SDcard
     output                  sd_clk,
-    output                  sd_cmd,
-    output                  sd_dat3,
-    output                  sd_dat
+    output                  sd_cs,
+    output                  sd_mosi,
+    input                   sd_miso
 );
 	
 wire         rst;
-wire         sd_cs;
 
 //------------------------------------------------------------------
 // Whishbone Wires
@@ -509,9 +508,9 @@ wb_spi spi0 (
 	.wb_sel_i( spi0_sel   ),
 	.wb_ack_o( spi0_ack   ),
 	.spi_sck(  sd_clk     ),
-	.spi_mosi( sd_cmd     ),
-	.spi_miso( sd_dat     ),
-	.spi_cs(   sd_dat3    )
+	.spi_mosi( sd_mosi    ),
+	.spi_miso( sd_miso    ),
+	.spi_cs(   sd_cs      )
 );
 
 //----------------------------------------------------------------------------
