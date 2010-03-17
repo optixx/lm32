@@ -67,7 +67,7 @@ module wb_spi(
 			bitcount <= 3'b000;
 			run <= 1'b0;
 			prescaler <= 8'h00;
-			divisor <= 8'hff;
+			divisor <= 8'h0f;
 		end else begin
 			prescaler <= prescaler + 1;
 			if (prescaler == divisor) begin
