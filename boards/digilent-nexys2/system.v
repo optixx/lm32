@@ -6,7 +6,7 @@
 
 module system
 #(
-	parameter   bootram_file     = "../../firmware/boot0-sd/image.ram",
+	parameter   bootram_file     = "../../firmware/boot0-serial/image.ram",
 	parameter   clk_freq         = 50000000,
 	parameter   uart_baud_rate   = 115200
 ) (
@@ -20,10 +20,6 @@ module system
 	output            [3:0] an,
 	
 	// UART
-	input                   uart_rxd, 
-	output                  uart_txd,
-	
-    // UART
 	input                   uart_rxd, 
 	output                  uart_txd,
 	
@@ -495,20 +491,6 @@ wb_spi spi0 (
 	.spi_cs(   sd_cs      )
 );
 
-/*
-divide_by_two dbt0 (
-    .clk (sd_tmp_clk),
-    .dclk (sd_clk)
-);
-*/
-
-divide_by_N dbn0 ( 
-    .reset   ( rst ),
-    .clk     ( clk),
-    .enable  ( 1 ) , 
-    .n       ( 4 ), 
-    .clk_out ( sd_tmp_clk)
-);
 
 //---------------------------------------------------------------------------
 // General Purpose IO
@@ -534,28 +516,6 @@ wb_gpio gpio0 (
 	.gpio_in(  gpio0_in     ),
 	.gpio_out( gpio0_out    ),
 	.gpio_oe(  gpio0_oe     )
-);
-
-//---------------------------------------------------------------------------
-// spi0
-//---------------------------------------------------------------------------
-
-wb_spi spi0 (
-	.clk(      clk          ),
-	.reset(    rst          ),
-	//
-	.wb_adr_i( spi0_adr   ),
-	.wb_dat_i( spi0_dat_w ),
-	.wb_dat_o( spi0_dat_r ),
-	.wb_stb_i( spi0_stb   ),
-	.wb_cyc_i( spi0_cyc   ),
-	.wb_we_i(  spi0_we    ),
-	.wb_sel_i( spi0_sel   ),
-	.wb_ack_o( spi0_ack   ),
-	.spi_sck(  sd_clk     ),
-	.spi_mosi( sd_mosi    ),
-	.spi_miso( sd_miso    ),
-	.spi_cs(   sd_cs      )
 );
 
 //----------------------------------------------------------------------------

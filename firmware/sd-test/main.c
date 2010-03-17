@@ -79,7 +79,7 @@ int main()
 	tic_init();
 	
     msleep(500);
-	uart_putstr("Bootloader init\n\r"); 
+        uart_putstr("Bootloader init\n\r"); 
 	
     memset(&fs, 0, sizeof(FATFS)); 	/* Clear file system object */
 	FatFs = &fs;	                /* Assign it to the FatFs module */	
