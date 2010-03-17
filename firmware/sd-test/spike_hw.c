@@ -187,4 +187,40 @@ void uart_puthex32(int i)
 }
 
 
+void dump_packet(uint32_t addr, uint32_t len, uint8_t * packet)
+{
+    uint16_t i,j;
+    uint16_t sum = 0;
+    uint8_t clear = 0;
+    for (i = 0; i < len; i += 16) {
+
+        sum = 0;
+        for (j = 0; j < 16; j++) {
+            sum += packet[i + j];
+        }
+        if (!sum) {
+            clear = 1;
+            continue;
+        }
+        if (clear) {
+            uart_putstr("*\r\n");
+            clear = 0;
+        }
+        uart_puthex32(addr + i);
+        uart_putstr(":");
+        for (j = 0; j < 16; j++) {
+            uart_putstr(" ");
+            uart_puthex8( packet[i + j]);
+        }
+        uart_putchar('|');
+        for (j = 0; j < 16; j++) {
+            if (packet[i + j] >= 33 && packet[i + j] <= 126)
+                uart_putchar( packet[i + j]);
+            else
+                uart_putchar('.');
+
+        }
+        uart_putstr("|\r\n");
+    }
+}
 

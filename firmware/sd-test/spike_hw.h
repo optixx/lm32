@@ -125,6 +125,7 @@ uint32_t readint(uint8_t nibbles, uint8_t* checksum);
 void uart_putint8(unsigned char c);
 void uart_puthex8(char c);
 void uart_puthex32(int i);
+void dump_packet(uint32_t addr, uint32_t len, uint8_t * packet);
 
 /***************************************************************************
  * SPI0

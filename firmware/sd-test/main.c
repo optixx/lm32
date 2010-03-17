@@ -64,11 +64,13 @@ void memtest()
 
 FATFS fs;				/* File system object */
 FIL fil;
-//DIR dir;
+
+uint8_t read_buffer[512 + 128];
 
 int main()
 {
 	WORD fsize;
+    WORD len;
 	FRESULT fresult;
 	int8_t  *p;
 	uint32_t i;
@@ -105,18 +107,23 @@ int main()
 		goto uartmode;
 	}
 
-	uart_putstr("loading\n\r");
-	uart_putstr("file size: 0x");
+	uart_putstr("found file size: 0x");
 	writeint(8, fil.fsize);
 	uart_putstr("\n\r");
-    
+    len = fil.fsize; 
+    for (i = 0; i < len; i += 512)	{ 
+		f_read (&fil, read_buffer , 512, &fsize);
+		dump_packet(i,512,read_buffer);
+	}
+	uart_putstr("Done");
+    /* 
     for (i = 0; i < fil.fsize && i < 1024*(512 - 16); i += 64*1024 - 1)	{ 
 		f_read (&fil, (uint8_t*) (0x40000000+i), 64*1024 - 1, &fsize);
 		uart_putstr("\nread bytes: 0x");
 		writeint(8, i+fsize);
 	}
 	jump(0x40000000);
-
+    */
 uartmode: 
 	uart_putstr("\r\n** SPIKE BOOTLOADER **\n");
 	for(;;) {
