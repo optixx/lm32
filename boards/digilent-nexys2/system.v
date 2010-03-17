@@ -4,7 +4,6 @@
 // Top Level Design for the Digilent Nexsy2 Spartan 3e Board
 //---------------------------------------------------------------------------
 
-
 module system
 #(
 	parameter   bootram_file     = "../../firmware/boot0-sd/image.ram",
@@ -12,6 +11,8 @@ module system
 	parameter   uart_baud_rate   = 115200
 ) (
 	input                   clk, 
+	
+    // Debug 
 	output            [7:0] led,
 	input             [3:0] btn,
 	input             [7:0] sw,
@@ -22,7 +23,11 @@ module system
 	input                   uart_rxd, 
 	output                  uart_txd,
 	
-	// SRAM
+    // UART
+	input                   uart_rxd, 
+	output                  uart_txd,
+	
+    // SRAM
 	//output           [22:0] sram_adr,
 	//inout            [15:0] sram_dat,
 	//output            [1:0] sram_be_n,    // Byte   Enable
@@ -30,7 +35,7 @@ module system
 	//output                  sram_oe_n,    // Output Enable
 	//output                  sram_we_n,    // Write  Enable
 	//output                  sram_ub,      // Upper byte Enable
-	//output                  sram_lb,      // Lower byte Enable
+	//output                  sram_lb,      // Lower byte Enablee
 	//output                  sram_clk,     // Clock
 	//input                   sram_wait,    // Wait
 	//output                  sram_cre,     // 
@@ -43,7 +48,6 @@ module system
 	output                  sd_mosi,
 	output                  sd_cs,
 	input                   sd_miso
-
 );
 	
 wire         rst;
@@ -91,7 +95,6 @@ wire [3:0]   lm32i_sel,
              bram0_sel,
              bram1_sel,
              spi0_sel;
-             
 
 wire         lm32i_we,
              lm32d_we,
@@ -119,7 +122,7 @@ wire         lm32i_stb,
              bram0_stb,
              bram1_stb,
              spi0_stb;
-             
+
 wire         lm32i_ack,
              lm32d_ack,
              uart0_ack,
@@ -417,6 +420,10 @@ wb_sram16 #(
 
 assign sram_lb_n = sram_be_n[0];
 assign sram_ub_n = sram_be_n[1];
+<<<<<<< HEAD
+=======
+
+>>>>>>> lastserial
 */
 
 //---------------------------------------------------------------------------
@@ -529,6 +536,28 @@ wb_gpio gpio0 (
 	.gpio_oe(  gpio0_oe     )
 );
 
+//---------------------------------------------------------------------------
+// spi0
+//---------------------------------------------------------------------------
+
+wb_spi spi0 (
+	.clk(      clk          ),
+	.reset(    rst          ),
+	//
+	.wb_adr_i( spi0_adr   ),
+	.wb_dat_i( spi0_dat_w ),
+	.wb_dat_o( spi0_dat_r ),
+	.wb_stb_i( spi0_stb   ),
+	.wb_cyc_i( spi0_cyc   ),
+	.wb_we_i(  spi0_we    ),
+	.wb_sel_i( spi0_sel   ),
+	.wb_ack_o( spi0_ack   ),
+	.spi_sck(  sd_clk     ),
+	.spi_mosi( sd_mosi    ),
+	.spi_miso( sd_miso    ),
+	.spi_cs(   sd_cs      )
+);
+
 //----------------------------------------------------------------------------
 // Enable PSRAM
 //----------------------------------------------------------------------------
@@ -590,7 +619,7 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
 */
 
 //---------------------------------------------------------------------------
-// Sevensegment
+// Seven Segment
 //---------------------------------------------------------------------------
 gpio_sevenseg gpio_sevenseg0 (
 	.clk_i( clk ),
@@ -598,10 +627,6 @@ gpio_sevenseg gpio_sevenseg0 (
 	.an( an ),
 	.gpio( gpio0_out )
 );
-
-
-
-
 //----------------------------------------------------------------------------
 // Mux UART wires according to sw[0]
 //----------------------------------------------------------------------------
@@ -621,6 +646,7 @@ assign rst             = (sw[1]) ?      1'b0 : btn[0];
 assign gpio0_in[11: 8] = (sw[1]) ?       btn : 4'b0;
 assign gpio0_in[31:12] = 20'b0;
 assign gpio0_in[ 7: 0] =  8'b0;
+
 endmodule    
     
 

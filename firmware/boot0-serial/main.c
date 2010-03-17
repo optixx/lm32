@@ -21,6 +21,14 @@ uint32_t read_uint32()
 
 #define     TEST_PATTERN        0x41424142
 
+void display_addr(int addr){
+    gpio0->out = addr;
+}
+
+void display_int(int val){
+    gpio0->out = val;
+}
+
 int main(int argc, char **argv)
 {
 	int8_t  *p;
@@ -29,7 +37,10 @@ int main(int argc, char **argv)
 	// Initialize UART
 	uart_init();
 
-	c = '*'; // print msg on first iteration
+    gpio0->oe = 0x000000ff;
+    gpio0->out = 0x0000;
+	
+    c = '*'; // print msg on first iteration
 	for(;;) {
 		uint32_t start, size, i;
     	uint32_t *mem_start, *mem_end, *mem_p; 
@@ -37,6 +48,7 @@ int main(int argc, char **argv)
     		case 'u': // upload 
     			start = read_uint32();
     			size  = read_uint32();
+                display_addr(start);
     			for (p = (int8_t *) start; p < (int8_t *) (start+size); p++) {
     				*p = uart_getchar();
     			}
@@ -50,7 +62,9 @@ int main(int argc, char **argv)
     			break;
     		case 'g': // goto
     			start = read_uint32();
-    			jump(start);
+    			display_int(0xdead);
+                jump(start);
+
     			break;   
         	case '1': // test
             	uart_putstr( "Memory Dump32: " );

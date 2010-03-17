@@ -309,12 +309,10 @@ def die(msg):
 
 class LM32Serial(object):
 
-    SPEED = 115200
-    DEV = "/dev/ttyUSB0"
     BOOT_SIG = "**soc-lm32/bootloader**"
 
-    def __init__(self):
-        self.io = serial.Serial(LM32Serial.DEV, LM32Serial.SPEED)
+    def __init__(self, dev, speed):
+        self.io = serial.Serial(dev, speed)
         self.debug = False
 
     def close(self):
@@ -327,7 +325,6 @@ class LM32Serial(object):
     def info(self,msg):
         sys.stdout.write(msg)
         sys.stdout.flush()
-
     def put_uint32(self,i):
         self.io.write( chr((i >> 24) & 0xff ))
         self.io.write( chr((i >> 16) & 0xff ))
@@ -399,7 +396,7 @@ def memcheck(options):
     
     print "Memcheck Addr=0x%X size=0x%X " % (test_base,test_size)
     
-    lm32 = LM32Serial()
+    lm32 = LM32Serial(options.port, options.baudrate)
     lm32.find_bootloader()
     
     data = []
@@ -418,7 +415,7 @@ def memcheck(options):
 def upload(options):
     BLOCK_SIZE = 0x800
     
-    lm32 = LM32Serial()
+    lm32 = LM32Serial(options.port, options.baudrate)
     lm32.find_bootloader()
     addr_jump = None
     data = open(options.filename_srec).read().splitlines()
@@ -437,13 +434,21 @@ def upload(options):
                 data.append(chr(int(dat[i:i+2],16)))
             lm32.upload(addr,data)    
     lm32.jump(addr_jump)
+    lm32.close()
+
+def jump(options):
+    lm32 = LM32Serial(options.port, options.baudrate)
+    addr = int(options.start_addr,16)
+    lm32.jump(addr)
+    lm32.close()
+
 
 def mterm(options):
 
     try:
         miniterm = Miniterm(
-            LM32Serial.DEV,
-            LM32Serial.SPEED,
+            options.port,
+            options.baudrate,
             "N",
             False,
             False
@@ -490,7 +495,7 @@ def main():
     parser.add_option("-p", "--port",
         dest = "port",
         help = "port, a number (default 0) or a device name (deprecated option)",
-        default = None
+        default = "/dev/ttyUSB0"
     )
 
     parser.add_option("-b", "--baud",
@@ -511,7 +516,7 @@ def main():
     parser.add_option("-a", "--action",
         dest = "action",
         action = "store",
-        help = "Select mode [memcheck,upload])",
+        help = "Select mode [memcheck,upload,jump])",
         default = None
     )
 
@@ -558,10 +563,12 @@ def main():
     )
 
     (options, args) = parser.parse_args()
+    if options.action =='jump':
+        jump(options)
     if options.action =='memcheck':
         memcheck(options)
     elif options.action =='upload':
-        if options.filename_srec is None: 
+        if options.filename_srec is None:
             parser.error("Need to specify a srecord filename")
         if not os.path.isfile(options.filename_srec):
             parser.error("Can't access srecord file %s" % options.filename_srec)
@@ -571,7 +578,7 @@ def main():
     if options.miniterm:
         mterm(options)
     if options.debugger:
-        if options.filename_elf is None: 
+        if options.filename_elf is None:
             parser.error("Need to specify elf filename")
         if not os.path.isfile(options.filename_elf):
             parser.error("Can't access elf file %s" % options.filename_elf)

@@ -1,10 +1,26 @@
-//-----------------------------------------------------------------
-// SPI Master
-//-----------------------------------------------------------------
 
 module wb_spi(
-	input               clk;
-	input               reset;
+	clk,
+    reset,
+    
+    wb_adr_i,
+    wb_dat_i,
+    wb_dat_o,
+    wb_sel_i,
+    wb_cyc_i,
+    wb_stb_i,
+    wb_ack_o,
+    wb_we_i,
+    
+	spi_sck,
+	spi_mosi,
+	spi_miso,
+	spi_cs
+);
+
+	input		clk;
+	input		reset;
+
 	// Wishbone bus
 	input      [31:0]   wb_adr_i;
 	input      [31:0]   wb_dat_i;
@@ -14,12 +30,11 @@ module wb_spi(
 	input               wb_stb_i;
 	output              wb_ack_o;
 	input               wb_we_i;
-	// SPI 
+
 	output              spi_sck;
 	output              spi_mosi;
 	input               spi_miso;
-	output reg   [7:0]  spi_cs;
-);
+	output reg          spi_cs;
 
 
 	reg  ack;
@@ -52,7 +67,7 @@ module wb_spi(
 			bitcount <= 3'b000;
 			run <= 1'b0;
 			prescaler <= 8'h00;
-			divisor <= 8'hff;
+			divisor <= 8'h0f;
 		end else begin
 			prescaler <= prescaler + 1;
 			if (prescaler == divisor) begin
@@ -89,7 +104,7 @@ module wb_spi(
 							run     <=  1'b1;
 						end
 					4'b0010:
-							spi_cs  <=  wb_dat_i[7:0];
+							spi_cs  <=  wb_dat_i[0];
 					4'b0100: 
 							divisor <=  wb_dat_i[7:0];
 				endcase
