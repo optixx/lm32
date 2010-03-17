@@ -381,7 +381,7 @@ class LM32Serial(object):
             self.progress()
             count = count + 1
             if count == max_tries:
-                die("Bootloader %s not not found" % BOOT_SIG)
+                die("Bootloader %s not not found" % LM32Serial.BOOT_SIG)
             self.io.write('\r')
             line = self.io.readline()
             if line and LM32Serial.BOOT_SIG in line:
@@ -503,7 +503,7 @@ def main():
         action = "store",
         type = 'int',
         help = "set baud rate, default %default",
-        default = 9600
+        default = 115200
     )
 
     parser.add_option("-f","--filename",

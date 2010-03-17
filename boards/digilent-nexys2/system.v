@@ -348,7 +348,7 @@ lm32_cpu lm0 (
 // Block RAM
 //---------------------------------------------------------------------------
 wb_bram #(
-	.adr_width( 13 ),
+	.adr_width( 12 ),
 	.mem_file_name( bootram_file )
 ) bram0 (
 	.clk_i(  clk  ),
@@ -416,10 +416,6 @@ wb_sram16 #(
 
 assign sram_lb_n = sram_be_n[0];
 assign sram_ub_n = sram_be_n[1];
-<<<<<<< HEAD
-=======
-
->>>>>>> lastserial
 */
 
 //---------------------------------------------------------------------------
@@ -474,8 +470,8 @@ wb_timer #(
 
 
 wb_spi spi0 (
-	.clk(      clk   ),
-	.reset(    rst          ),
+	.clk(      clk        ),
+	.reset(    rst        ),
 	//
 	.wb_adr_i( spi0_adr   ),
 	.wb_dat_i( spi0_dat_w ),
@@ -485,7 +481,7 @@ wb_spi spi0 (
 	.wb_we_i(  spi0_we    ),
 	.wb_sel_i( spi0_sel   ),
 	.wb_ack_o( spi0_ack   ),
-	.spi_sck(  sd_clk ),
+	.spi_sck(  sd_clk     ),
 	.spi_mosi( sd_mosi    ),
 	.spi_miso( sd_miso    ),
 	.spi_cs(   sd_cs      )

@@ -39,9 +39,7 @@ SRC=                                      \
 	../../rtl/wb_gpio/wb_gpio.v           \
 	../../rtl/wb_conbus/wb_conbus_top.v   \
 	../../rtl/wb_conbus/wb_conbus_arb.v   \
-	../../rtl/wb_sram/wb_sram16.v         \
-	../../rtl/wb_spi/wb_spi.v             \
-	../../rtl/wb_sram/wb_sram16.v
+	../../rtl/wb_sram/wb_sram16.v         
 
 #############################################################################
 # Syntheis constants
