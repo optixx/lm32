@@ -503,14 +503,14 @@ def main():
         action = "store",
         type = 'int',
         help = "set baud rate, default %default",
-        default = 115200
+        default = 9600
     )
 
     parser.add_option("-f","--filename",
         dest = "filename_srec",
         action = "store",
         help = "set srec image filename for upload",
-        default = None
+        default = ''
     )
 
     parser.add_option("-a", "--action",
@@ -559,7 +559,7 @@ def main():
         dest = "filename_elf",
         action = "store",
         help = "Set elf filename for debugger",
-        default = None
+        default = False
     )
 
     (options, args) = parser.parse_args()
@@ -572,9 +572,7 @@ def main():
             parser.error("Need to specify a srecord filename")
         if not os.path.isfile(options.filename_srec):
             parser.error("Can't access srecord file %s" % options.filename_srec)
-        
         upload(options)
-        
     if options.miniterm:
         mterm(options)
     if options.debugger:
