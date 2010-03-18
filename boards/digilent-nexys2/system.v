@@ -24,20 +24,18 @@ module system
 	output                  uart_txd,
 	
     // SRAM
-	//output           [22:0] sram_adr,
-	//inout            [15:0] sram_dat,
-	//output            [1:0] sram_be_n,    // Byte   Enable
-	//output                  sram_ce_n,    // Chip   Enable
-	//output                  sram_oe_n,    // Output Enable
-	//output                  sram_we_n,    // Write  Enable
-	//output                  sram_ub,      // Upper byte Enable
-	//output                  sram_lb,      // Lower byte Enablee
-	//output                  sram_clk,     // Clock
-	//input                   sram_wait,    // Wait
-	//output                  sram_cre,     // 
-	//output                  sram_adv,
-	//output                  flash_cs,     // Flash chip select 
-	//output                  flash_rp      // Flash chip select 
+	output           [22:0] sram_adr,
+	inout            [15:0] sram_dat,
+	output                  sram_ce_n,    // Chip   Enable
+	output                  sram_oe_n,    // Output Enable
+	output                  sram_we_n,    // Write  Enable
+	output                  sram_ub,      // Upper byte Enable
+	output                  sram_lb,      // Lower byte Enablee
+	output                  sram_clk,     // Clock
+	output                  sram_cre,     // 
+	output                  sram_adv,
+	output                  flash_cs,     // Flash chip select 
+	output                  flash_rp,   // Flash chip select 
     
     //SDCARD
 	output                  sd_clk,
@@ -47,7 +45,6 @@ module system
 );
 	
 wire         rst;
-wire         sd_tmp_clk;
 
 //------------------------------------------------------------------
 // Whishbone Wires
@@ -64,7 +61,8 @@ wire [31:0]  lm32i_adr,
              gpio0_adr,
              bram0_adr,
              bram1_adr,
-             spi0_adr;
+             spi0_adr,
+             sram0_adr;
 
 wire [31:0]  lm32i_dat_r,
              lm32i_dat_w,
@@ -81,7 +79,10 @@ wire [31:0]  lm32i_dat_r,
              bram1_dat_w,
              bram1_dat_r,
              spi0_dat_w,
-             spi0_dat_r;
+             spi0_dat_r,
+             sram0_dat_r,
+             sram0_dat_w;
+            
 
 wire [3:0]   lm32i_sel,
              lm32d_sel,
@@ -90,7 +91,8 @@ wire [3:0]   lm32i_sel,
              gpio0_sel,
              bram0_sel,
              bram1_sel,
-             spi0_sel;
+             spi0_sel,
+             sram0_sel;
 
 wire         lm32i_we,
              lm32d_we,
@@ -99,7 +101,8 @@ wire         lm32i_we,
              gpio0_we,
              bram0_we,
              bram1_we,
-             spi0_we;
+             spi0_we,
+             sram0_we;
 
 wire         lm32i_cyc,
              lm32d_cyc,
@@ -108,7 +111,8 @@ wire         lm32i_cyc,
              gpio0_cyc,
              bram0_cyc,
              bram1_cyc,
-             spi0_cyc;
+             spi0_cyc,
+             sram0_cyc;
 
 wire         lm32i_stb,
              lm32d_stb,
@@ -117,7 +121,8 @@ wire         lm32i_stb,
              gpio0_stb,
              bram0_stb,
              bram1_stb,
-             spi0_stb;
+             spi0_stb,
+             sram0_stb;
 
 wire         lm32i_ack,
              lm32d_ack,
@@ -126,7 +131,8 @@ wire         lm32i_ack,
              gpio0_ack,
              bram0_ack,
              bram1_ack,
-             spi0_ack;
+             spi0_ack,
+             sram0_ack;
 
 wire         lm32i_rty,
              lm32d_rty;
@@ -389,9 +395,11 @@ wb_bram_milk #(
 //---------------------------------------------------------------------------
 // sram0
 //---------------------------------------------------------------------------
-/*
+
+wire [1:0] sram_be_n;
+
 wb_sram16 #(
-	.adr_width(  18  ),
+	.adr_width(  23  ),
 	.latency(    0   )
 ) sram0 (
 	.clk(         clk           ),
@@ -414,9 +422,15 @@ wb_sram16 #(
 	.sram_we_n(   sram_we_n     )
 );
 
-assign sram_lb_n = sram_be_n[0];
-assign sram_ub_n = sram_be_n[1];
-*/
+assign sram_lb = sram_be_n[0];
+assign sram_ub = sram_be_n[1];
+
+assign sram_clk = 0;
+assign sram_cre = 0;
+assign sram_adv = 0;
+assign flash_cs = 1;
+assign flash_rp = 0;
+
 
 //---------------------------------------------------------------------------
 // uart0
@@ -467,8 +481,6 @@ wb_timer #(
 //---------------------------------------------------------------------------
 // spi0
 //---------------------------------------------------------------------------
-
-
 wb_spi spi0 (
 	.clk(      clk        ),
 	.reset(    rst        ),
@@ -513,19 +525,6 @@ wb_gpio gpio0 (
 	.gpio_out( gpio0_out    ),
 	.gpio_oe(  gpio0_oe     )
 );
-
-//----------------------------------------------------------------------------
-// Enable PSRAM
-//----------------------------------------------------------------------------
-
-//assign sram_ub = 0;
-//assign sram_lb = 0;
-//assign sram_clk = 0;
-//assign sram_cre = 0;
-//assign sram_adv = 0;
-//assign flash_cs = 1;
-//assign flash_rp = 0;
-
 
 //---------------------------------------------------------------------------
 // LogicAnalyzerComponent
