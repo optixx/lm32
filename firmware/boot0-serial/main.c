@@ -33,7 +33,6 @@ int main(int argc, char **argv)
 {
 	int8_t  *p;
 	uint8_t  c;
-
 	// Initialize UART
 	uart_init();
 
@@ -68,19 +67,21 @@ int main(int argc, char **argv)
     			break;   
         	case '1': // test
             	uart_putstr( "Memory Dump32: " );
-            	mem_start = (uint32_t *)0x40000000;
-            	mem_end   = (uint32_t *)0x40000080;
-                *mem_start = 'A' ;
-            	for (mem_p=mem_start; mem_p<mem_end; mem_p++) {
-            		if (((uint32_t)mem_p & 12) == 0) {
-            			uart_putstr("\r\n[");
-            			uart_puthex32((uint32_t) mem_p);
-            			uart_putchar(']');    
-            		}
-    		        uart_putchar(' ');    
-            		uart_puthex32(*mem_p);
-            	}
-    			uart_putstr("\r\n");
+            	for (i=0; i < 1048576; i+=1024){ 
+                    mem_start = (uint32_t *)0x40000000 + i;
+                    mem_end   = (uint32_t *)0x4000000a + i;
+                    *mem_start = 'A' ;
+                    for (mem_p=mem_start; mem_p<mem_end; mem_p++) {
+                        if (((uint32_t)mem_p & 12) == 0) {
+                            uart_putstr("[");
+                            uart_puthex32((uint32_t) mem_p);
+                            uart_putchar(']');    
+                        }
+                        uart_putchar(' ');    
+                        uart_puthex32(*mem_p);
+                    }
+                    uart_putstr("\r\n");
+                }
         		break;   
             case '2': // test
             	uart_putstr( "Memory Dump8: " );
