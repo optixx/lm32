@@ -7,8 +7,9 @@
 
 
 void test() {
-    uart_putchar('a');
-    uart_putchar('c');
+    uart_putchar('A');
+    uart_putchar('B');
+    uart_putchar('C');
 } 
 
 char glob[] = "Global";
