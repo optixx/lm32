@@ -384,40 +384,6 @@ wb_bram_milk #(
 	.wb_we_i(   bram1_we     )
 );
 
-
-
-//---------------------------------------------------------------------------
-// sram0
-//---------------------------------------------------------------------------
-/*
-wb_sram16 #(
-	.adr_width(  18  ),
-	.latency(    0   )
-) sram0 (
-	.clk(         clk           ),
-	.reset(       rst           ),
-	// Wishbone
-	.wb_cyc_i(    sram0_cyc     ),
-	.wb_stb_i(    sram0_stb     ),
-	.wb_we_i(     sram0_we      ),
-	.wb_adr_i(    sram0_adr     ),
-	.wb_dat_o(    sram0_dat_r   ),
-	.wb_dat_i(    sram0_dat_w   ),
-	.wb_sel_i(    sram0_sel     ),
-	.wb_ack_o(    sram0_ack     ),
-	// SRAM
-	.sram_adr(    sram_adr      ),
-	.sram_dat(    sram_dat      ),
-	.sram_be_n(   sram_be_n     ),
-	.sram_ce_n(   sram_ce_n     ),
-	.sram_oe_n(   sram_oe_n     ),
-	.sram_we_n(   sram_we_n     )
-);
-
-assign sram_lb_n = sram_be_n[0];
-assign sram_ub_n = sram_be_n[1];
-*/
-
 //---------------------------------------------------------------------------
 // uart0
 //---------------------------------------------------------------------------
@@ -514,19 +480,6 @@ wb_gpio gpio0 (
 	.gpio_oe(  gpio0_oe     )
 );
 
-//----------------------------------------------------------------------------
-// Enable PSRAM
-//----------------------------------------------------------------------------
-
-//assign sram_ub = 0;
-//assign sram_lb = 0;
-//assign sram_clk = 0;
-//assign sram_cre = 0;
-//assign sram_adv = 0;
-//assign flash_cs = 1;
-//assign flash_rp = 0;
-
-
 //---------------------------------------------------------------------------
 // LogicAnalyzerComponent
 //---------------------------------------------------------------------------
@@ -538,7 +491,6 @@ assign      lac_rts = 1;
 wire [7:0]  select;
 wire [7:0]  probe;
 
-/*
 lac #(
 	.uart_freq_hz(     clk_freq ),
 	.uart_baud(  uart_baud_rate ),
@@ -572,7 +524,6 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
                (select[3:0] == 'hb) ? lm32d_adr[15: 8] :
                                       lm32d_adr[ 7: 0] ;
 
-*/
 
 //---------------------------------------------------------------------------
 // Seven Segment

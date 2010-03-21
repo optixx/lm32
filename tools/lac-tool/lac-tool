@@ -6,10 +6,11 @@
 # There are various programs to view .vcd files -- e.g. GtkWave
 #
 
-require "serialport.so"
+require "rubygems"
+require "serialport"
 require "optparse"
 
-$PORT_PATH = "/dev/ttyUSB0"
+$PORT_PATH = "/dev/tty.usbserial-000023FA"
 $PORT_BAUD = 115200
 $TIMESCALE = "10ns"
 
@@ -55,16 +56,21 @@ begin
 
 	raise "Missing arguments" if ARGV.length != 4;
 
-	select   = ARGV[1].hex
-	trig     = ARGV[2].hex
-	trigmask = ARGV[3].hex
-	filename = ARGV[4]
+	select   = ARGV[0].hex
+	trig     = ARGV[1].hex
+	trigmask = ARGV[2].hex
+	filename = ARGV[3]
 rescue => e
 	STDERR.puts "\n#{e.message}"
 	STDERR.puts
 	STDERR.puts opts
 	exit 1
 end
+
+STDERR.puts "select #{select}"
+STDERR.puts "trig #{trig}"
+STDERR.puts "trigmask #{trigmask}"
+STDERR.puts "filename #{filename}"
 
 ###
 # Open serial port
@@ -75,6 +81,7 @@ rescue => e
 	STDERR.puts "\nCould not open serial port: #{e.message}"
 	exit 1
 end
+
 
 begin
 	f = File.open( filename, mode="w" );
