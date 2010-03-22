@@ -506,22 +506,26 @@ def upload(options):
     except:
         die("Can't open serial port")
     lm32.find_bootloader()
-    addr_jump = none
+    addr_jump = 0
     data = open(options.filename_srec).read().splitlines()
     for line in data:
         line = line.strip()
-        if line.startswith("s7"):
+        if line.startswith("S7"):
             addr_jump = int(line[4:12],16)
-        if line.startswith("s3"):
+        if line.startswith("S3"):
             count = int(line[2:4],16)
             addr  = int(line[4:12],16)
             dat   = line[12:-2]
             cksum = int(line[-2:],16)
             count = (count - 5) * 2
             data = []
+            sys.stdout.write("\rUploading 0x%08x" % addr)
+            sys.stdout.flush()
             for i in range(0,count,2):
                 data.append(chr(int(dat[i:i+2],16)))
             lm32.upload(addr,data)    
+    sys.stdout.write("\n")
+    sys.stdout.flush()
     lm32.jump(addr_jump)
     lm32.close()
 
@@ -533,7 +537,6 @@ def jump(options):
 
 
 def lac(options):
-    
 
     try:
         select = int(options.lac_select,16)
@@ -549,27 +552,27 @@ def lac(options):
         die("Can't open output file %s" % options.filename_vcd)
 
     try:
-        lm32 = lm32serial(options.port, options.baudrate)
+        lm32 = LM32Serial(options.port, options.baudrate)
     except:
         die("Can't open serial port")
     
     # Write VCD header
-    fd.write("$date") 
+    fd.write("$date\n") 
     fd.write("\t%i" % int(time.time()))
-    fd.write("$end")
-    fd.write("$version") 
-    fd.write("\tLogicAnalyzerComponent (http://www.das-labor.org/)")
-    fd.write("$end")
-    fd.write("$timescale")
-    fd.write("\t%s" % timescale)
-    fd.write("$end")
+    fd.write("$end\n")
+    fd.write("$version\n") 
+    fd.write("\tLogicAnalyzerComponent (http://www.das-labor.org/)\n")
+    fd.write("$end\n")
+    fd.write("$timescale\n")
+    fd.write("\t%s\n" % timescale)
+    fd.write("$end\n")
 
     # Declare wires
-    fd.write("$scope module lac $end")
-    fd.write("$var wire 8 P probe[7:0] $end")
-    fd.write("$enddefinitions $end")
+    fd.write("$scope module lac $end\n")
+    fd.write("$var wire 8 P probe[7:0] $end\n")
+    fd.write("$enddefinitions $end\n")
     
-    print "Using 0x%02x 0x02% 0x%02x" % ( select, trigger, triggermask)
+    print "Select Probe: 0x%02x Trigger: 0x%02x Mask: 0x%02x" % ( select, trigger, triggermask)
     # CMD_DISARM
     for i in range(0,6):
         lm32.put_uint8(0x00)
@@ -589,7 +592,7 @@ def lac(options):
     print "TRIGGERED -- Reading 0x%x bytes..." % size
     for i in range(0,size):
         c = lm32.get_uint8()
-        fd.write("\#%i" % (i +1))
+        fd.write("#%i\n" % (i))
         fd.write("%s P\n" % binary(c))
 
     lm32.close()
