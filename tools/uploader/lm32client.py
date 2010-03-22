@@ -5,6 +5,7 @@ import sys
 import serial
 import cgitb
 import os
+import time
 import threading
 import termios
 
@@ -307,6 +308,16 @@ def die(msg):
     print msg
     sys.exit(-1)
 
+def binary(v,bits=8):
+    r = "b"
+    for i in range(bits-1,-1,-1):
+        s = 1<<i
+        if  v & s:
+            r +="1"
+        else:
+            r +="0"
+    return r
+
 class LM32Serial(object):
 
     BOOT_SIG = "**soc-lm32/bootloader**"
@@ -325,11 +336,19 @@ class LM32Serial(object):
     def info(self,msg):
         sys.stdout.write(msg)
         sys.stdout.flush()
+    
     def put_uint32(self,i):
         self.io.write( chr((i >> 24) & 0xff ))
         self.io.write( chr((i >> 16) & 0xff ))
         self.io.write( chr((i >>  8) & 0xff ))
         self.io.write( chr((i >>  0) & 0xff ))
+
+    def put_uint8(self,i):
+        self.io.write( chr((i) & 0xff ))
+   
+    def get_uint8(self):
+        return ord(self.io.read(1))
+
 
     def upload(self, addr, data):
         if self.debug:
@@ -396,7 +415,11 @@ def memcheck(options):
     
     print "Memcheck Addr=0x%X size=0x%X " % (test_base,test_size)
     
-    lm32 = LM32Serial(options.port, options.baudrate)
+    try:
+        lm32 = LM32Serial(options.port, options.baudrate)
+    except:
+        die("Can't open serial port")
+
     lm32.find_bootloader()
     
     data = []
@@ -413,17 +436,20 @@ def memcheck(options):
     print "Done."
 
 def upload(options):
-    BLOCK_SIZE = 0x800
     
-    lm32 = LM32Serial(options.port, options.baudrate)
+    block_size = 0x800
+    try:
+        lm32 = LM32Serial(options.port, options.baudrate)
+    except:
+        die("Can't open serial port")
     lm32.find_bootloader()
-    addr_jump = None
+    addr_jump = none
     data = open(options.filename_srec).read().splitlines()
     for line in data:
         line = line.strip()
-        if line.startswith("S7"):
+        if line.startswith("s7"):
             addr_jump = int(line[4:12],16)
-        if line.startswith("S3"):
+        if line.startswith("s3"):
             count = int(line[2:4],16)
             addr  = int(line[4:12],16)
             dat   = line[12:-2]
@@ -442,6 +468,71 @@ def jump(options):
     lm32.jump(addr)
     lm32.close()
 
+
+def lac(options):
+    
+
+    try:
+        select = int(options.lac_select,16)
+        trigger = int(options.lac_trigger,16)
+        triggermask = int(options.lac_triggermask,16)
+        timescale = options.lac_timescale
+    except:
+        die("Need values for SELECT TRIGGER TRIGGERMASK")
+    
+    try:
+        fd = open(options.filename_vcd,"w")
+    except:
+        die("Can't open output file %s" % options.filename_vcd)
+
+    try:
+        lm32 = lm32serial(options.port, options.baudrate)
+    except:
+        die("Can't open serial port")
+    
+    # Write VCD header
+    fd.write("$date") 
+    fd.write("\t%i" % int(time.time()))
+    fd.write("$end")
+    fd.write("$version") 
+    fd.write("\tLogicAnalyzerComponent (http://www.das-labor.org/)")
+    fd.write("$end")
+    fd.write("$timescale")
+    fd.write("\t%s" % timescale)
+    fd.write("$end")
+
+    # Declare wires
+    fd.write("$scope module lac $end")
+    fd.write("$var wire 8 P probe[7:0] $end")
+    fd.write("$enddefinitions $end")
+    
+    print "Using 0x%02x 0x02% 0x%02x" % ( select, trigger, triggermask)
+    # CMD_DISARM
+    for i in range(0,6):
+        lm32.put_uint8(0x00)
+    
+    # CMD_ARM
+    lm32.put_uint8(0x01)
+    lm32.put_uint8(select)
+    lm32.put_uint8(trigger)
+    lm32.put_uint8(triggermask)
+    lm32.put_uint8(0x00)
+
+    print "LAC armed; waiting for trigger condition..."
+
+    size = lm32.get_uint8()
+    size = 1 << size;
+
+    print "TRIGGERED -- Reading 0x%x bytes..." % size
+    for i in range(0,size):
+        c = lm32.get_uint8()
+        fd.write("\#%i" % (i +1))
+        fd.write("%s P\n" % binary(c))
+
+    lm32.close()
+    fd.close()
+    fsize = os.stat(options.filename_vcd).st_size
+    print "Done %s %s Kb" % (options.filename_vcd, fsize / 1024)
 
 def mterm(options):
 
@@ -492,9 +583,9 @@ def main():
         description = "lm32clieant - A simple client to upload images"
     )
 
-    parser.add_option("-p", "--port",
+    parser.add_option("-d", "--device",
         dest = "port",
-        help = "port, a number (default 0) or a device name (deprecated option)",
+        help = "Set device (Default: %default)",
         default = "/dev/ttyUSB0"
     )
 
@@ -509,35 +600,35 @@ def main():
     parser.add_option("-f","--filename",
         dest = "filename_srec",
         action = "store",
-        help = "set srec image filename for upload",
+        help = "Set srec image filename for serial upload",
         default = ''
     )
 
     parser.add_option("-a", "--action",
         dest = "action",
         action = "store",
-        help = "Select mode [memcheck,upload,jump])",
+        help = "Select mode [memcheck,lac,upload,jump])",
         default = None
     )
 
     parser.add_option("-s", "--start",
         dest = "start_addr",
         action = "store",
-        help = "Set start addr (hex)",
+        help = "Set start addr for jumps (Default: %default)",
         default = "0x40000000"
     )
     
     parser.add_option("-S", "--size",
         dest = "size",
         action = "store",
-        help = "Set size (hex)",
+        help = "Set size for memchecks (Default: %default)",
         default = "0x8000"
     )
 
     parser.add_option("-B", "--blocksize",
         dest = "block_size",
         action = "store",
-        help = "Set block size (hex)",
+        help = "Set block size for memchecks (Default: %default)",
         default = "0x800"
     )
 
@@ -548,10 +639,10 @@ def main():
         default = False
     )
 
-    parser.add_option("-d", "--debugger",
+    parser.add_option("-D", "--debugger",
         dest = "debugger",
         action = "store_true",
-        help = "Start debugger cgdb",
+        help = "Start debugger cgdb and open a remote serial session",
         default = False
     )
     
@@ -562,19 +653,59 @@ def main():
         default = False
     )
 
+    parser.add_option("-v", "--vcd",
+        dest = "filename_vcd",
+        action = "store",
+        help = "Set vcd filename for the la (Default: %default)",
+        default = "trace.vcd"
+    )
+
+    parser.add_option("-t", "--timescale",
+        dest = "lac_timescale",
+        action = "store",
+        help = "Timescale announced in .vcd file (Default: %default)",
+        default = "10ns"
+    )
+
+    parser.add_option("", "--select",
+        dest = "lac_select",
+        action = "store",
+        help = "Select probe value",
+        default = None
+    )
+
+    parser.add_option("", "--trigger",
+        dest = "lac_trigger",
+        action = "store",
+        help = "Select trigger value",
+        default = None
+    )
+
+    parser.add_option("", "--triggermask",
+        dest = "lac_triggermask",
+        action = "store",
+        help = "Select trigger mask value",
+        default = None
+    )
+
     (options, args) = parser.parse_args()
     if options.action =='jump':
         jump(options)
-    if options.action =='memcheck':
+    elif options.action =='memcheck':
         memcheck(options)
+    elif options.action =='lac':
+        if options.filename_vcd is None:
+            parser.error("Need to specify a .vcd filename")
+        lac(options)
     elif options.action =='upload':
         if options.filename_srec is None:
-            parser.error("Need to specify a srecord filename")
+            parser.error("Need to specify a .srec filename")
         if not os.path.isfile(options.filename_srec):
-            parser.error("Can't access srecord file %s" % options.filename_srec)
+            parser.error("Can't access  srec file %s" % options.filename_srec)
         upload(options)
     if options.miniterm:
         mterm(options)
+    
     if options.debugger:
         if options.filename_elf is None:
             parser.error("Need to specify elf filename")
