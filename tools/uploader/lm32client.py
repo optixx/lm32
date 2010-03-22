@@ -72,6 +72,7 @@ class Miniterm:
         self.dtr_state = True
         self.rts_state = True
         self.break_state = False
+        self.log = open("miniterm.log","w")
 
     def start(self):
         self.alive = True
@@ -129,29 +130,38 @@ class Miniterm:
                     # direct output, just have to care about newline setting
                     if data == '\r' and self.convert_outgoing == CONVERT_CR:
                         sys.stdout.write('\n')
+                        self.log.write('\n')
                     else:
                         sys.stdout.write(data)
+                        self.log.write(data)
                 elif self.repr_mode == 1:
                     # escape non-printable, let pass newlines
                     if self.convert_outgoing == CONVERT_CRLF and data in '\r\n':
                         if data == '\n':
                             sys.stdout.write('\n')
+                            self.log.write('\n')
                         elif data == '\r':
                             pass
                     elif data == '\n' and self.convert_outgoing == CONVERT_LF:
                         sys.stdout.write('\n')
+                        self.log.write('\n')
                     elif data == '\r' and self.convert_outgoing == CONVERT_CR:
                         sys.stdout.write('\n')
+                        self.log.write('\n')
                     else:
                         sys.stdout.write(repr(data)[1:-1])
+                        self.log.write(repr(data)[1:-1])
                 elif self.repr_mode == 2:
                     # escape all non-printable, including newline
                     sys.stdout.write(repr(data)[1:-1])
+                    self.log.write(repr(data)[1:-1])
                 elif self.repr_mode == 3:
                     # escape everything (hexdump)
                     for character in data:
                         sys.stdout.write("%s " % character.encode('hex'))
+                        self.log.write("%s " % character.encode('hex'))
                 sys.stdout.flush()
+                self.log.flush()
         except serial.SerialException, e:
             self.alive = False
             # would be nice if the console reader could be interruptted at this
@@ -407,6 +417,57 @@ class LM32Serial(object):
                 self.info("found.\n")
                 break
 
+import hashlib
+import random 
+import os
+
+
+class UrjtagUploader(object):
+    PATH_ISE = "/opt/Xilinx/11.1/ISE" 
+    PATH_JTAG = "/usr/local/bin"
+
+    def __init__(self,bitstream):
+        s = hashlib.md5(str(random.randint(0,10000000))).hexdigest()
+        self.file_jtag = os.path.join("/tmp","lm32_%s.jtag" % s)
+        self.file_impact = os.path.join("/tmp","lm32_%s.impact" % s)
+        self.bin_impact = os.path.join(UrjtagUploader.PATH_ISE,"bin","lin","impact")
+        self.bin_jtag = os.path.join(UrjtagUploader.PATH_JTAG,"jtag")
+        self.file_bitstream = bitstream
+        self.file_svf = bitstream.split(".")[0] + ".svf"
+    
+    def makeSVF(self):
+    	print "Generating SVF file..."
+        fd = open(self.file_impact,"w")
+        fd.write("setmode -bs\n")
+        fd.write("setCable -port svf -file %s\n" % self.file_svf)
+        fd.write("addDevice -p 1 -file %s/xcf/data/xcf04s.bsd\n" % UrjtagUploader.PATH_ISE)
+        fd.write("addDevice -p 2 -file %s\n" % self.file_bitstream)
+        fd.write("program -p 2\n")
+        fd.write("closeCable\n")
+        fd.write("quit\n")
+        fd.close()
+        os.system("impact -batch %s" % self.file_impact)
+        os.unlink(self.file_impact)
+
+    def uploadSVF(self):
+    	print "Upload SVF file..."
+        fd = open(self.file_jtag,"w")
+        fd.write("bsdl path %s/spartan3e/data;$XILINX/xcf/data\n" % UrjtagUploader.PATH_ISE)
+        fd.write("cable USB-TO-JTAG-IF\n")
+        fd.write("detect\n")
+        fd.write("part 1\n")
+        fd.write("svf %s\n" % self.file_svf)
+        fd.write("quit\n")
+        fd.close()
+        os.system("jtag %s" % self.file_jtag)
+
+
+
+def bitstream(options):
+    urjtag = UrjtagUploader(options.filename_bitstream)
+    urjtag.makeSVF()
+    urjtag.uploadSVF()
+
 def memcheck(options):
     
     block_size = int(options.block_size,16)
@@ -604,10 +665,17 @@ def main():
         default = ''
     )
 
+    parser.add_option("-i","--bitstream",
+        dest = "filename_bitstream",
+        action = "store",
+        help = "set bitstream filename",
+        default = ''
+    )
+
     parser.add_option("-a", "--action",
         dest = "action",
         action = "store",
-        help = "Select mode [memcheck,lac,upload,jump])",
+        help = "Select mode [bitstream,lac,emcheck,upload,jump])",
         default = None
     )
 
@@ -689,7 +757,11 @@ def main():
     )
 
     (options, args) = parser.parse_args()
-    if options.action =='jump':
+    if options.action =='bitstream':
+        if options.filename_bitstream is None:
+            parser.error("Need to specify a bitstream filename")
+        bitstream(options)
+    elif options.action =='jump':
         jump(options)
     elif options.action =='memcheck':
         memcheck(options)
