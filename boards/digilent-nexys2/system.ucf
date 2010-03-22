@@ -31,14 +31,14 @@ NET "sw<1>" LOC = "H18" | IOSTANDARD = LVTTL;
 NET "sram_oe_n"     LOC = "T2" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_we_n"     LOC = "N7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 
-NET "sram_adv"      LOC = "J4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+#NET "sram_adv"      LOC = "J4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_ce_n"     LOC = "R6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_clk"      LOC = "H5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "sram_cre"      LOC = "P7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+#NET "sram_clk"      LOC = "H5" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+#NET "sram_cre"      LOC = "P7" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 NET "sram_lb"       LOC = "K5" | IOSTANDARD = LVCMOS33 | SLEW = FAST; 
 NET "sram_ub"       LOC = "K4" | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "flash_cs"      LOC = "R5"  | IOSTANDARD = LVCMOS33 | SLEW = FAST;
-NET "flash_rp"      LOC = "T5"  | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+#NET "flash_cs"      LOC = "R5"  | IOSTANDARD = LVCMOS33 | SLEW = FAST;
+#NET "flash_rp"      LOC = "T5"  | IOSTANDARD = LVCMOS33 | SLEW = FAST;
 
 
 NET "sram_adr<22>" LOC = "K6" | IOSTANDARD = LVCMOS33 | SLEW = FAST;

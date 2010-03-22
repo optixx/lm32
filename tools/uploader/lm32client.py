@@ -446,38 +446,23 @@ class UrjtagUploader(object):
         fd.write("closeCable\n")
         fd.write("quit\n")
         fd.close()
-<<<<<<< HEAD
-        os.system("impact -batch %s" % self.file_impact)
-=======
         os.system("impact -batch %s 2>/dev/null >/dev/null" % self.file_impact)
->>>>>>> master
         os.unlink(self.file_impact)
 
     def uploadSVF(self):
     	print "Upload SVF file..."
         fd = open(self.file_jtag,"w")
-<<<<<<< HEAD
-        fd.write("bsdl path %s/spartan3e/data;$XILINX/xcf/data\n" % UrjtagUploader.PATH_ISE)
-        fd.write("cable USB-TO-JTAG-IF\n")
-        fd.write("detect\n")
-        fd.write("part 1\n")
-=======
         fd.write("bsdl path %s/spartan3e/data;%s/xcf/data\n" % (UrjtagUploader.PATH_ISE, UrjtagUploader.PATH_ISE))
         fd.write("cable USB-TO-JTAG-IF\n")
         fd.write("frequency 1000000\n")
         fd.write("detect\n")
         fd.write("part 1\n")
         fd.write("print chain\n")
->>>>>>> master
         fd.write("svf %s\n" % self.file_svf)
         fd.write("quit\n")
         fd.close()
         os.system("jtag %s" % self.file_jtag)
-<<<<<<< HEAD
-
-=======
         os.unlink(self.file_jtag)
->>>>>>> master
 
 
 def bitstream(options):
@@ -682,13 +667,6 @@ def main():
         dest = "filename_srec",
         action = "store",
         help = "Set srec image filename for serial upload",
-        default = ''
-    )
-
-    parser.add_option("-i","--bitstream",
-        dest = "filename_bitstream",
-        action = "store",
-        help = "set bitstream filename",
         default = ''
     )
 

@@ -31,11 +31,11 @@ module system
 	output                  sram_we_n,    // Write  Enable
 	output                  sram_ub,      // Upper byte Enable
 	output                  sram_lb,      // Lower byte Enablee
-	output                  sram_clk,     // Clock
-	output                  sram_cre,     // 
-	output                  sram_adv,
-	output                  flash_cs,     // Flash chip select 
-	output                  flash_rp,   // Flash chip select 
+	//output                  sram_clk,     // Clock
+	//output                  sram_cre,     // 
+	//output                  sram_adv,
+	//output                  flash_cs,     // Flash chip select 
+	//output                  flash_rp,     // Flash chip select 
     
     //SDCARD
 	output                  sd_clk,
@@ -435,11 +435,11 @@ wb_sram16 #(
 assign sram_lb = sram_be_n[0];
 assign sram_ub = sram_be_n[1];
 
-assign sram_clk = 0;
-assign sram_cre = 0;
-assign sram_adv = 0;
-assign flash_cs = 1;
-assign flash_rp = 0;
+//assign sram_clk = 0;
+//assign sram_cre = 0;
+//assign sram_adv = 0;
+//assign flash_cs = 1;
+//assign flash_rp = 0;
 
 
 wire uart0_rxd;
