@@ -62,7 +62,7 @@ typedef struct {
 
 void msleep(uint32_t msec);
 void nsleep(uint32_t nsec);
-
+void sleep(int msec);
 void tic_init();
 
 

@@ -66,13 +66,16 @@ int main(int argc, char **argv)
 
     			break;   
         	case '1': // test
-            	uart_putstr( "Memory Dump32: " );
-            	for (i=0; i < 1048576; i+=1024){ 
+            	uart_putstr( "Test Pattern 32bit access" );
+            	for (i=0; i < 16777216 / sizeof(uint32_t); i+=1024){ 
                     mem_start = (uint32_t *)0x40000000 + i;
                     mem_end   = (uint32_t *)0x4000000a + i;
-                    *mem_start = 'A' ;
+                    *mem_start = TEST_PATTERN;
+                    mem_p = mem_start;
+                    *(uint32_t*)++mem_p = 0x40000000 + i;
+                    *(uint32_t*)++mem_p = i;
                     for (mem_p=mem_start; mem_p<mem_end; mem_p++) {
-                        if (((uint32_t)mem_p & 12) == 0) {
+                        if (((uint32_t)mem_p & 15) == 0) {
                             uart_putstr("[");
                             uart_puthex32((uint32_t) mem_p);
                             uart_putchar(']');    
@@ -84,7 +87,7 @@ int main(int argc, char **argv)
                 }
         		break;   
             case '2': // test
-            	uart_putstr( "Memory Dump8: " );
+            	uart_putstr( "Memory dump 8bit");
             	mem_start = (uint32_t *)0x40000000;
             	mem_end   = (uint32_t *)0x40000080;
                 *mem_start = 'A' ;
@@ -107,7 +110,6 @@ int main(int argc, char **argv)
                     *p = TEST_PATTERN;
                     p++;
             	}
-
             	uart_putstr("Dumping testpattern...\r\n");
             	uint8_t* q = (uint8_t*)0x40000000;
                 for(i = 0; i < 0x1000; i++)
@@ -118,33 +120,37 @@ int main(int argc, char **argv)
                 uart_putstr("\r\ndone!\r\n");
             	break;   
             case '4': 
-        		for (mem_p=mem_start; mem_p<mem_end; mem_p++)
-                    *mem_p = 0x00000000;
-                uart_putstr("\r\nCleared Test Mem\r\n");
+                uart_putstr("\r\nCleare memory from 0x40000000 - 0x41000000 \r\n");
+            	mem_start = (uint32_t *)0x40000000;
+            	mem_end   = (uint32_t *)0x41000000;
+        		for (mem_p=mem_start; mem_p<mem_end; mem_p++){
+                    *mem_p = 0x00;
+            		if ((uint32_t)mem_p % (1024 * 1024) == 0) {
+                        uart_putstr("\r0x");
+            			uart_puthex32((uint32_t)mem_p);
+            		}
+                }
+                uart_putstr("\r\nDone\r\n");
             	break;   
             case '5': 
-            	uart_putstr( "GPIO Test 1...\r\n" );
+            	uart_putstr( "GPIO test Kight Rider\r\n" );
             	gpio0->oe = 0x000000ff;
         		for(i=0; i<8; i++) {
         			uint32_t out1, out2;
-
         			out1 = 0x01 << i;
         			out2 = 0x80 >> i;
         			gpio0->out = out1 | out2;
                     uart_puthex32(gpio0->out);
                 	uart_putstr( "\r\n" );
-
         			sleep(100);
         		}
                 break;
             case '6': 
-            	uart_putstr( "GPIO Test 2...\r\n" );
+            	uart_putstr( "GPIO test seven segment counter\r\n" );
             	gpio0->oe = 0x000000ff;
-        		for(i=0; i<0xffff; i++) {
+        		for(i=0; i<0xff; i++) {
                 	gpio0->out = i;
-                    uart_puthex32(gpio0->out);
-                	uart_putstr( "\r\n" );
-        			sleep(50);
+        			sleep(20);
         		}
                 break;
         
