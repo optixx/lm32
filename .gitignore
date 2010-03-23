@@ -38,3 +38,4 @@ image
 *routed_pad.txt
 *xlnx_auto_0_xdb*
 *xst
+*.vcd
