@@ -396,7 +396,7 @@ wire [1:0] sram_be_n;
 
 wb_sram16 #(
 	.adr_width(  23  ),
-	.latency(    15   )
+	.latency(    8   )
 ) sram0 (
 	.clk(         clk           ),
 	.reset(       rst           ),
