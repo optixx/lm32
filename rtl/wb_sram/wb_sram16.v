@@ -45,7 +45,7 @@ assign sram_dat = wdat_oe ? wdat : 16'bz;
 
 
 // Latency countdown
-reg  [2:0] lcount;
+reg  [4:0] lcount;
 
 //----------------------------------------------------------------------------
 // State Machine

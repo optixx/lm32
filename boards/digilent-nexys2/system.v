@@ -31,11 +31,6 @@ module system
 	output                  sram_we_n,    // Write  Enable
 	output                  sram_ub,      // Upper byte Enable
 	output                  sram_lb,      // Lower byte Enablee
-	//output                  sram_clk,     // Clock
-	//output                  sram_cre,     // 
-	//output                  sram_adv,
-	//output                  flash_cs,     // Flash chip select 
-	//output                  flash_rp,     // Flash chip select 
     
     //SDCARD
 	output                  sd_clk,
@@ -235,17 +230,6 @@ wb_conbus_top #(
 	.m7_stb_i(  gnd    ),
 
 	// Slave0
-	//.s0_dat_i(  bram1_dat_r   ),
-	//.s0_dat_o(  bram1_dat_w   ),
-	//.s0_adr_o(  bram1_adr     ),
-	//.s0_sel_o(  bram1_sel     ),
-	//.s0_we_o(   bram1_we      ),
-	//.s0_cyc_o(  bram1_cyc     ),
-	//.s0_stb_o(  bram1_stb     ),
-	//.s0_ack_i(  bram1_ack     ),
-	//.s0_err_i(  gnd    ),
-	//.s0_rty_i(  gnd    ),
-	// Slave0
 	.s0_dat_i(  sram0_dat_r   ),
 	.s0_dat_o(  sram0_dat_w   ),
 	.s0_adr_o(  sram0_adr     ),
@@ -385,6 +369,7 @@ wb_bram #(
 //---------------------------------------------------------------------------
 // Block RAM1 for testing, untisl i get this fucking PSRAM working
 //---------------------------------------------------------------------------
+/*
 wb_bram_milk #(
 	.adr_width( 15 )
 ) bram1 (
@@ -401,6 +386,7 @@ wb_bram_milk #(
 	.wb_we_i(   bram1_we     )
 );
 
+*/
 
 //---------------------------------------------------------------------------
 // sram0
@@ -410,7 +396,7 @@ wire [1:0] sram_be_n;
 
 wb_sram16 #(
 	.adr_width(  23  ),
-	.latency(    0   )
+	.latency(    15   )
 ) sram0 (
 	.clk(         clk           ),
 	.reset(       rst           ),
@@ -434,13 +420,6 @@ wb_sram16 #(
 
 assign sram_lb = sram_be_n[0];
 assign sram_ub = sram_be_n[1];
-
-//assign sram_clk = 0;
-//assign sram_cre = 0;
-//assign sram_adv = 0;
-//assign flash_cs = 1;
-//assign flash_rp = 0;
-
 
 wire uart0_rxd;
 wire uart0_txd;
@@ -505,7 +484,6 @@ wb_spi spi0 (
 	.spi_miso( sd_miso    ),
 	.spi_cs(   sd_cs      )
 );
-
 
 //---------------------------------------------------------------------------
 // General Purpose IO
@@ -577,8 +555,6 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
                (select[3:0] == 'hb) ? lm32d_adr[15: 8] :
                (select[3:0] == 'hc) ? lm32d_adr[ 7: 0] :
                { 3'b0 , rst, sd_clk, sd_mosi, sd_miso, sd_cs };
-
-
 
 //---------------------------------------------------------------------------
 // Seven Segment
