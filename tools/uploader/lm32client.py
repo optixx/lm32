@@ -421,8 +421,8 @@ import hashlib
 import random 
 import os
 
-
 class UrjtagUploader(object):
+    
     PATH_ISE = "/opt/Xilinx/11.1/ISE" 
     PATH_JTAG = "/usr/local/bin"
 
@@ -446,8 +446,12 @@ class UrjtagUploader(object):
         fd.write("closeCable\n")
         fd.write("quit\n")
         fd.close()
+        if not os.path.isfile(self.file_impact):
+            die("Failed to create impact batch file")
         os.system("impact -batch %s 2>/dev/null >/dev/null" % self.file_impact)
         os.unlink(self.file_impact)
+        if not os.path.isfile(self.file_svf):
+            die("Failed to create svf file")
 
     def uploadSVF(self):
     	print "Upload SVF file..."
@@ -461,22 +465,30 @@ class UrjtagUploader(object):
         fd.write("svf %s\n" % self.file_svf)
         fd.write("quit\n")
         fd.close()
+        if not os.path.isfile(self.file_jtag):
+            die("Failed to create jtag batch file")
         os.system("jtag %s" % self.file_jtag)
         os.unlink(self.file_jtag)
 
 
 def bitstream(options):
+    if not os.path.file(options.filename_bitstream):
+        die("Can't find file %s" % options.filename_bitstream)
+    
     urjtag = UrjtagUploader(options.filename_bitstream)
     urjtag.makeSVF()
     urjtag.uploadSVF()
 
 def memcheck(options):
+   
+    try:
+        block_size = int(options.block_size,16)
+        test_size  = int(options.size,16)
+        test_base  = int(options.start_addr,16)
+    except:
+        die("Cannot convert inpurt values to hex")
     
-    block_size = int(options.block_size,16)
-    test_size  = int(options.size,16)
-    test_base  = int(options.start_addr,16)
-    
-    print "Memcheck Addr=0x%X size=0x%X " % (test_base,test_size)
+    print "Memcheck addr=0x%X size=0x%X " % (test_base,test_size)
     
     try:
         lm32 = LM32Serial(options.port, options.baudrate)
@@ -506,7 +518,11 @@ def upload(options):
     except:
         die("Can't open serial port")
     lm32.find_bootloader()
+    
     addr_jump = 0
+    if not os.path.file(options.filename_srec):
+        die("Can't find file %s" % options.filename_srec)
+
     data = open(options.filename_srec).read().splitlines()
     for line in data:
         line = line.strip()
@@ -530,10 +546,88 @@ def upload(options):
     lm32.close()
 
 def jump(options):
-    lm32 = LM32Serial(options.port, options.baudrate)
-    addr = int(options.start_addr,16)
+    
+    try:
+        lm32 = LM32Serial(options.port, options.baudrate)
+    except:
+        die("Can't open serial port")
+    
+    try:
+        addr = int(options.start_addr,16)
+    except:
+        die("Faulty address %s" % options.start_addr)
+    
     lm32.jump(addr)
     lm32.close()
+
+
+class VCDWriter(object):
+
+    def __init__(self, filename):
+        self.fd = open(filename_vcd,"w")
+        self.filename = filename 
+
+
+    def writeHeader(self):
+        # Write VCD header
+        self.fd.write("$date\n") 
+        self.fd.write("\t%s" % time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))
+        self.fd.write("$end\n")
+        self.fd.write("$version\n") 
+        self.fd.write("\tLogicAnalyzerComponent soc-lm32\n")
+        self.fd.write("$end\n")
+        self.fd.write("$timescale\n")
+        self.fd.write("\t%s\n" % timescale)
+        self.fd.write("$end\n")
+
+    def writeWrites(self):
+        # Declare wires
+        self.fd.write("$scope module lac $end\n")
+        self.fd.write("$var wire 8 P probe[7:0] $end\n")
+        self.fd.write("$enddefinitions $end\n")
+
+    def close():
+        self.fd.close()
+        fsize = os.stat(self.filename).st_size
+        print "Done %s %s Kb" % (self.filename, fsize / 1024)
+    
+    def putStep(self,i):
+        self.fd.write("#%i\n" % (i))
+    
+    def putBinary(self,c):
+        self.fd.write("%s P\n" % binary(c))
+    
+class Lm32Lac(LM32Serial):
+
+
+    def setup(self,select,trigger,triggermask):
+        print "Select Probe: 0x%02x Trigger: 0x%02x Mask: 0x%02x" % ( select, trigger, triggermask)
+        self.trigger = trigger
+        self.select = select
+        self.triggermask = triggermask
+
+    def disarm(self):
+        for i in range(0,6):
+            self.put_uint8(0x00)
+    
+    def arm(self): 
+        self.put_uint8(0x01)
+        self.put_uint8(self.select)
+        self.put_uint8(self.trigger)
+        self.put_uint8(self.triggermask)
+        self.put_uint8(0x00)
+        print "LAC armed; waiting for trigger condition..."
+
+    def getSize(self):
+        size = self.get_uint8()
+        self.size = 1 << size
+
+    def get(self,vcd):
+        print "TRIGGERED -- Reading 0x%x bytes..." % size
+        for i in range(0,self.size):
+            c =  self.get_uint8()
+            vcd.putStep(i)
+            vcd.putBinary(c)
 
 
 def lac(options):
@@ -547,58 +641,27 @@ def lac(options):
         die("Need values for SELECT TRIGGER TRIGGERMASK")
     
     try:
-        fd = open(options.filename_vcd,"w")
+        vcd = VCDWriter(option.filename_vcd)
     except:
         die("Can't open output file %s" % options.filename_vcd)
 
     try:
-        lm32 = LM32Serial(options.port, options.baudrate)
+        lac = Lm32Lac(options.port, options.baudrate)
     except:
         die("Can't open serial port")
     
-    # Write VCD header
-    fd.write("$date\n") 
-    fd.write("\t%i" % int(time.time()))
-    fd.write("$end\n")
-    fd.write("$version\n") 
-    fd.write("\tLogicAnalyzerComponent (http://www.das-labor.org/)\n")
-    fd.write("$end\n")
-    fd.write("$timescale\n")
-    fd.write("\t%s\n" % timescale)
-    fd.write("$end\n")
-
-    # Declare wires
-    fd.write("$scope module lac $end\n")
-    fd.write("$var wire 8 P probe[7:0] $end\n")
-    fd.write("$enddefinitions $end\n")
+    vcd.writeHeader()
+    vcd.writeWires()
     
-    print "Select Probe: 0x%02x Trigger: 0x%02x Mask: 0x%02x" % ( select, trigger, triggermask)
-    # CMD_DISARM
-    for i in range(0,6):
-        lm32.put_uint8(0x00)
-    
-    # CMD_ARM
-    lm32.put_uint8(0x01)
-    lm32.put_uint8(select)
-    lm32.put_uint8(trigger)
-    lm32.put_uint8(triggermask)
-    lm32.put_uint8(0x00)
+    lac.setup(select, trigger, triggermask)
+    lac.disam()
+    lac.arm()
+    lac.getSize()
+    lac.get()
 
-    print "LAC armed; waiting for trigger condition..."
+    vcd.close()
+    lac.close()
 
-    size = lm32.get_uint8()
-    size = 1 << size;
-
-    print "TRIGGERED -- Reading 0x%x bytes..." % size
-    for i in range(0,size):
-        c = lm32.get_uint8()
-        fd.write("#%i\n" % (i))
-        fd.write("%s P\n" % binary(c))
-
-    lm32.close()
-    fd.close()
-    fsize = os.stat(options.filename_vcd).st_size
-    print "Done %s %s Kb" % (options.filename_vcd, fsize / 1024)
 
 def mterm(options):
 
@@ -633,7 +696,7 @@ def mterm(options):
 
 def debugger(options):
     fd = open("remote.gdb","w")
-    fd.write("target remote /dev/ttyUSB0\n")
+    fd.write("target remote %s\n" % options.port)
     fd.close()
     cmd = "cgdb -d lm32-elf-gdb  -x remote.gdb %s" % options.filename_elf
     print "Execute: %s" % cmd
