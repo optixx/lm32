@@ -127,7 +127,7 @@ int main()
 			out2 = 0x80 >> i;
 			gpio0->out = out1 | out2;
 
-			msleep(100);
+			//msleep(100);
 		}
 	}
 
