@@ -198,10 +198,12 @@ void dump_packet(uint32_t addr, uint32_t len, uint8_t * packet)
         for (j = 0; j < 16; j++) {
             sum += packet[i + j];
         }
+        /*
         if (!sum) {
             clear = 1;
             continue;
         }
+        */
         if (clear) {
             uart_putstr("*\r\n");
             clear = 0;

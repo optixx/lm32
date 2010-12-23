@@ -65,28 +65,21 @@ void memtest()
 FATFS fs;				/* File system object */
 FIL fil;
 
-uint8_t read_buffer[512 + 128];
-
 int main()
 {
 	WORD fsize;
-    WORD len;
 	FRESULT fresult;
 	int8_t  *p;
 	uint32_t i;
-	
+	uint32_t len;
+    volatile uint32_t *addr;
 	isr_init();
 	tic_init();
 	
-    msleep(500);
-        uart_putstr("Bootloader init\n\r"); 
-	
+    uart_putstr("Bootloader init\n\r"); 
     memset(&fs, 0, sizeof(FATFS)); 	/* Clear file system object */
 	FatFs = &fs;	                /* Assign it to the FatFs module */	
-
-	uart_putstr("Looking for sys/firmware.bin\n\r"); 
-	const char firmware[] = "sys/firmware.bin";
- 
+	const char firmware[] = "batman.smc";
 	fresult = f_open(&fil, firmware,  FA_READ|FA_OPEN_EXISTING);
 	uart_putstr("Got fresult\n\r"); 
 		
@@ -111,11 +104,19 @@ int main()
 	writeint(8, fil.fsize);
 	uart_putstr("\n\r");
     len = fil.fsize; 
+    
     for (i = 0; i < len; i += 512)	{ 
-		f_read (&fil, read_buffer , 512, &fsize);
-		dump_packet(i,512,read_buffer);
-	}
-	uart_putstr("Done");
+        addr = (uint8_t *)0x40100000 + i;
+		fresult = f_read (&fil, (uint8_t*)addr,512, &fsize);
+		
+        uart_putstr("\nread bytes: 0x");
+		writeint(8, i+fsize);
+		uart_putstr(" addr 0x");
+		writeint(8, addr);
+    }
+	
+    uart_putstr("\n");
+	dump_packet((0x40100000 + 0x81b0),128, (volatile uint8_t*) (0x40100000 + 0x81b0));
     /* 
     for (i = 0; i < fil.fsize && i < 1024*(512 - 16); i += 64*1024 - 1)	{ 
 		f_read (&fil, (uint8_t*) (0x40000000+i), 64*1024 - 1, &fsize);
@@ -125,7 +126,7 @@ int main()
 	jump(0x40000000);
     */
 uartmode: 
-	uart_putstr("\r\n** SPIKE BOOTLOADER **\n");
+	uart_putstr("\r\n** SD TEST **\n");
 	for(;;) {
 		uint32_t start, size, checksum, help;
 		uart_putchar('>');
@@ -137,7 +138,7 @@ uartmode:
     			break;
 
     		case 's': // start 
-    			jump(0x4007C000);
+    			jump(0x400006a8);
     			break;
                 
 			case 'm': // memtest

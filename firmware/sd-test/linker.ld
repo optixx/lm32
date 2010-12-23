@@ -9,8 +9,7 @@ _BRAM_SIZE  = 0x2000;
 _BRAM_END   = _BRAM_START + _BRAM_SIZE;
 
 MEMORY {
-/*  bram    : ORIGIN = 0x00000000, LENGTH = 0x2000 */         /*  8k */
-  sram    : ORIGIN = 0x40000000 + 1024*(512-16), LENGTH = 0x4000          /*  16 k */
+  sram    : ORIGIN = 0x40000000 , LENGTH = 0x100000  /*  1Mb */
   
 }
 

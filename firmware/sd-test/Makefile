@@ -36,18 +36,18 @@ mmc.o: mmc.c
 ff.o: ff.c
 	$(LM32_CC) $(CFLAGSZ) -c $<
 
-image: crt0ram.o $(OBJ)
-	$(LM32_LD) $(LLDFLAGS) -Map image.map -N -o image crt0ram.o $(OBJ)
+image.elf: crt0ram.o $(OBJ)
+	$(LM32_LD) $(LLDFLAGS) -Map image.map -N -o image.elf crt0ram.o $(OBJ)
 
-image.lst: image
+image.lst: image.elf
 	$(LM32_OBJDUMP) -h -S $< > $@
 
-image.bin: image
-	$(LM32_OBJCOPY) $(SEGMENTS) -O binary image image.bin
+image.bin: image.elf
+	$(LM32_OBJCOPY) $(SEGMENTS) -O binary image.elf image.bin
 	wc -c image.bin
 
-image.srec: image image.lst
-	$(LM32_OBJCOPY) $(SEGMENTS) -O srec image image.srec
+image.srec: image.elf image.lst
+	$(LM32_OBJCOPY) $(SEGMENTS) -O srec image.elf image.srec
 
 $(VRAMFILE): image.srec
 	$(SREC2VRAM) image.srec 0x00000000 0x2000 > $(VRAMFILE)

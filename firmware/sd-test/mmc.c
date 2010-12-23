@@ -35,7 +35,7 @@ static volatile
 BYTE Timer1, Timer2;		/* 100Hz decrement timer */
 
 
-#define DEBUG 0
+#define DEBUG 1
 
 
 static
