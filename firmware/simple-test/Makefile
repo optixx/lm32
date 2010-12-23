@@ -30,7 +30,7 @@ image.lst: image
 image.bin: image
 	$(LM32_OBJCOPY) $(SEGMENTS) -O binary image image.bin
 
-image.srec: image image.lst
+image.srec: image image.lst image.bin
 	$(LM32_OBJCOPY) $(SEGMENTS) -O srec image image.srec
 
 $(VRAMFILE): image.srec
