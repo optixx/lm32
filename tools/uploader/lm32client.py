@@ -405,7 +405,7 @@ class LM32Serial(object):
         
     def find_bootloader(self, max_tries = 32):
         self.info("Looking for soc-lm32 bootloader")
-        count = 0;
+        count = 0
         while True:
             self.progress()
             count = count + 1
@@ -520,7 +520,7 @@ def upload(options):
     lm32.find_bootloader()
     
     addr_jump = 0
-    if not os.path.file(options.filename_srec):
+    if not os.path.isfile(options.filename_srec):
         die("Can't find file %s" % options.filename_srec)
 
     data = open(options.filename_srec).read().splitlines()
@@ -563,10 +563,10 @@ def jump(options):
 
 class VCDWriter(object):
 
-    def __init__(self, filename):
-        self.fd = open(filename_vcd,"w")
+    def __init__(self, filename, timescale):
+        self.fd = open(filename,"w")
         self.filename = filename 
-
+        self.timescale = timescale
 
     def writeHeader(self):
         # Write VCD header
@@ -577,16 +577,16 @@ class VCDWriter(object):
         self.fd.write("\tLogicAnalyzerComponent soc-lm32\n")
         self.fd.write("$end\n")
         self.fd.write("$timescale\n")
-        self.fd.write("\t%s\n" % timescale)
+        self.fd.write("\t%s\n" % self.timescale)
         self.fd.write("$end\n")
 
-    def writeWrites(self):
+    def writeWires(self):
         # Declare wires
         self.fd.write("$scope module lac $end\n")
         self.fd.write("$var wire 8 P probe[7:0] $end\n")
         self.fd.write("$enddefinitions $end\n")
 
-    def close():
+    def close(self):
         self.fd.close()
         fsize = os.stat(self.filename).st_size
         print "Done %s %s Kb" % (self.filename, fsize / 1024)
@@ -623,7 +623,7 @@ class Lm32Lac(LM32Serial):
         self.size = 1 << size
 
     def get(self,vcd):
-        print "TRIGGERED -- Reading 0x%x bytes..." % size
+        print "TRIGGERED -- Reading 0x%x bytes..." % self.size
         for i in range(0,self.size):
             c =  self.get_uint8()
             vcd.putStep(i)
@@ -641,7 +641,7 @@ def lac(options):
         die("Need values for SELECT TRIGGER TRIGGERMASK")
     
     try:
-        vcd = VCDWriter(option.filename_vcd)
+        vcd = VCDWriter(options.filename_vcd,timescale)
     except:
         die("Can't open output file %s" % options.filename_vcd)
 
@@ -654,10 +654,10 @@ def lac(options):
     vcd.writeWires()
     
     lac.setup(select, trigger, triggermask)
-    lac.disam()
+    lac.disarm()
     lac.arm()
     lac.getSize()
-    lac.get()
+    lac.get(vcd)
 
     vcd.close()
     lac.close()
