@@ -554,6 +554,7 @@ assign probe = (select[3:0] == 'h0) ? { rst, lm32i_stb, lm32i_cyc, lm32i_ack, lm
                (select[3:0] == 'ha) ? lm32d_adr[23:16] :
                (select[3:0] == 'hb) ? lm32d_adr[15: 8] :
                (select[3:0] == 'hc) ? lm32d_adr[ 7: 0] :
+               (select[3:0] == 'hd) ? gpio0_out[ 7: 0] :
                { 3'b0 , rst, sd_clk, sd_mosi, sd_miso, sd_cs };
 
 //---------------------------------------------------------------------------
