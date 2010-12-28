@@ -563,8 +563,10 @@ FRESULT f_mountdrv (void)
 
 	/* Initialize disk drive */
 	if (disk_initialize() & STA_NOINIT)	return FR_NOT_READY;
+	uart_putstr("disk_initialize ok\n\r");
 
 	/* Search FAT partition */
+	
 	fat = check_fs(sect = 0);		/* Check sector 0 as an SFD format */
 	if (!fat) {						/* Not a FAT boot record, it will be an FDISK format */
 		/* Check a partition listed in top of the partition table */
@@ -573,6 +575,7 @@ FRESULT f_mountdrv (void)
 			fat = check_fs(sect);				/* Check the partition */
 		}
 	}
+
 	if (!fat) return FR_NO_FILESYSTEM;	/* No FAT patition */
 
 	/* Initialize file system object */

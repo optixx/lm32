@@ -44,7 +44,7 @@ BYTE rcvr_spi (void)
     spi0->data=0xff;	
     while(spi0->status & 0x01);
 #if DEBUG 
-    uart_putstr("read spi data=0x");
+    uart_putstr(__FILE__":read spi data=0x");
     uart_puthex8(spi0->data);
     uart_putstr("\n\r");
 #endif
@@ -58,7 +58,7 @@ void  xmit_spi (BYTE value)
 {
     spi0->data=value;	
     while(spi0->status & 0x01);
-    uart_putstr("write spi data=0x");
+    uart_putstr(__FILE__":write spi data=0x");
     uart_puthex8(value);
     uart_putstr("\n\r");
 }
@@ -77,7 +77,7 @@ BYTE wait_ready (void)
 {
 	BYTE res;
 #if DEBUG 
-    uart_putstr("wait_ready: ");
+    uart_putstr(__FILE__":wait_ready: ");
 #endif
     Timer2 = 50;	/* Wait for ready in timeout of 500ms */
 	rcvr_spi();
@@ -85,10 +85,12 @@ BYTE wait_ready (void)
 		res = rcvr_spi();
 	while ((res != 0xFF) && Timer2--);
 
+#if DEBUG 
     if (res != 0xff)
-        uart_putstr("is not ready\r\n");
+        uart_putstr(__FILE__":is not ready\r\n");
     else
         uart_putstr("\r\n");
+#endif
 	return res;
 }
 
@@ -103,11 +105,12 @@ BOOL rcvr_datablock (
 {
 	BYTE token;
 	Timer1 = 10;
-	do {							/* Wait for data packet in timeout of 100ms */
+    do {							/* Wait for data packet in timeout of 100ms */
 		token = rcvr_spi();
 	} while ((token == 0xFF) && Timer1);
-	if(token != 0xFE) return FALSE;	/* If not valid data token, retutn with error */
-
+	if(token != 0xFE){ 
+        return FALSE;	/* If not valid data token, retutn with error */
+    }
 	do {							/* Receive the data block into buffer */
 		rcvr_spi_m(buff++);
 		rcvr_spi_m(buff++);
@@ -178,7 +181,13 @@ BYTE send_cmd (
 	n = 10;								/* Wait for a valid response in timeout of 10 attempts */
 	do {
 		res = rcvr_spi();
+	#if DEBUG
+	uart_putstr(__FILE__":send_cmd res=0x");
+    uart_puthex8(res);
+    uart_putstr("\n\r");
+    #endif
     } while ((res & 0x80) && --n);
+	
 
 	return res;			/* Return with the response value */
 }
@@ -198,37 +207,37 @@ DSTATUS disk_initialize (void)
 	if (!(Stat & STA_NODISK)) {
 		n = 10;						            /* Dummy clock */
 #if DEBUG 	    
-        uart_putstr("clock\r\n");
+        uart_putstr(__FILE__":clock\r\n");
 #endif        
         do
 			rcvr_spi();
 		while (--n);
 #if DEBUG 	    
-	    uart_putstr("select\r\n");
+	    uart_putstr(__FILE__":select\r\n");
 #endif        
 		SELECT();			                    /* CS = L */
 #if DEBUG 	    
-        uart_putstr("CMD0\r\n");
+        uart_putstr(__FILE__":CMD0\r\n");
 #endif        
 		if (send_cmd(CMD0, 0) == 1) {			/* Enter Idle state */
 			Timer1 = 50;						/* Initialization timeout of 500 msec */
 #if DEBUG 	    
-	        uart_putstr("CMD1\r\n");
+	        uart_putstr(__FILE__":CMD1\r\n");
 #endif        
             while (Timer1-- && send_cmd(CMD1, 0))	  /* Initialize with CMD1 */
 #if DEBUG 	    
-			    uart_putstr("CMD1\r\n");
+			    uart_putstr(__FILE__":CMD1\r\n");
 #endif        
             if (Timer1) {
 				f = 1;							/* When device goes ready, break */
 #if DEBUG 	    
-	            uart_putstr("driver ready\r\n");
+	            uart_putstr(__FILE__":driver ready\r\n");
 #endif        
 			} else {
 				Timer1 = 100;
 				while (Timer1) {				/* Retry initialization with ACMD41 */
 #if DEBUG 	    
-	                uart_putstr("CMD55\r\n");
+	                uart_putstr(__FILE__":CMD55\r\n");
 #endif        
 					if (send_cmd(CMD55, 0) & 0xFE) continue;
 					if (send_cmd(CMD41, 0) == 0) {
@@ -239,12 +248,12 @@ DSTATUS disk_initialize (void)
 		}
 
 #if DEBUG 	    
-	    uart_putstr("CMD16\r\n");
+	    uart_putstr(__FILE__":CMD16\r\n");
 #endif        
 		if (f && (send_cmd(CMD16, 512) == 0))	/* Select R/W block length */
 			f = 2;
 #if DEBUG 	    
-	    uart_putstr("deselect\r\n");
+	    uart_putstr(__FILE__":deselect\r\n");
 #endif        
 		DESELECT();			/* CS = H */
 		rcvr_spi();			/* Idle (Release DO) */
@@ -252,10 +261,10 @@ DSTATUS disk_initialize (void)
 
 	if (f == 2){
 		Stat &= ~STA_NOINIT;	/* When initialization succeeded, clear STA_NOINIT */
-	    uart_putstr("Disk init ok\r\n");
+	    uart_putstr(__FILE__":Disk init ok\r\n");
     } else {
 		disk_shutdown();		/* Otherwise force uninitialized */
-	    uart_putstr("Disk shutdown\r\n");
+	    uart_putstr(__FILE__":Disk shutdown\r\n");
     }
 	return Stat;
 }
